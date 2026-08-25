@@ -46,7 +46,6 @@
       color: #1f4e79;
     }
 
-    /* Contenedor con scroll vertical fijo, como el segmentador de Sheets */
     .slicer-buttons {
       display: flex;
       flex-wrap: wrap;
@@ -57,16 +56,9 @@
       overflow-y: scroll;
     }
 
-    .slicer-buttons::-webkit-scrollbar {
-      width: 8px;
-    }
-    .slicer-buttons::-webkit-scrollbar-track {
-      background: #f0f0f0;
-    }
-    .slicer-buttons::-webkit-scrollbar-thumb {
-      background-color: var(--excel-border);
-      border-radius: 4px;
-    }
+    .slicer-buttons::-webkit-scrollbar { width: 8px; }
+    .slicer-buttons::-webkit-scrollbar-track { background: #f0f0f0; }
+    .slicer-buttons::-webkit-scrollbar-thumb { background-color: var(--excel-border); border-radius: 4px; }
 
     .btn-slicer {
       background-color: var(--excel-btn-bg);
@@ -83,9 +75,7 @@
       transition: all 0.1s ease;
     }
 
-    .btn-slicer:hover {
-      background-color: #8ea9db;
-    }
+    .btn-slicer:hover { background-color: #8ea9db; }
 
     .btn-slicer.active {
       background-color: var(--excel-btn-active);
@@ -102,6 +92,8 @@
       color: #555;
     }
 
+    .toolbar-right { display: flex; gap: 8px; align-items: center; }
+
     .btn-clear-filters {
       background-color: #eef1f6;
       border: 1px solid var(--excel-border);
@@ -111,10 +103,7 @@
       border-radius: 2px;
       cursor: pointer;
     }
-
-    .btn-clear-filters:hover {
-      background-color: #dde6f2;
-    }
+    .btn-clear-filters:hover { background-color: #dde6f2; }
 
     .table-container {
       overflow-x: auto;
@@ -141,37 +130,117 @@
     .filter-row th {
       background-color: #eef1f6;
       padding: 4px;
+      position: relative;
     }
 
-    .filter-row select {
+    /* Dropdown de filtro tipo Excel */
+    .filter-dropdown { position: relative; }
+
+    .btn-filter-toggle {
       width: 100%;
-      font-size: 11px;
-      padding: 3px 2px;
-      border: 1px solid var(--excel-border);
-      border-radius: 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       background-color: #fff;
+      border: 1px solid var(--excel-border);
       color: #333;
+      font-size: 11px;
+      padding: 4px 6px;
+      border-radius: 2px;
+      cursor: pointer;
       box-sizing: border-box;
     }
-
-    .filter-row select.filter-active {
+    .btn-filter-toggle:hover { background-color: #f4f7fb; }
+    .btn-filter-toggle.filter-active {
       background-color: #dce8ff;
       border-color: var(--excel-btn-active);
       font-weight: bold;
+      color: #1f4e79;
     }
+
+    .filter-panel {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 100;
+      width: 230px;
+      background: #fff;
+      border: 1px solid var(--excel-border);
+      border-radius: 4px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+      padding: 8px;
+      text-align: left;
+      white-space: normal;
+      font-weight: normal;
+    }
+
+    .filter-sort-row { display: flex; gap: 4px; margin-bottom: 6px; }
+    .filter-sort-row button {
+      flex: 1;
+      font-size: 10px;
+      padding: 5px 2px;
+      border: 1px solid var(--excel-border);
+      background: #eef1f6;
+      border-radius: 2px;
+      cursor: pointer;
+      color: #1f4e79;
+    }
+    .filter-sort-row button:hover { background: #dde6f2; }
+
+    .filter-search {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 5px 6px;
+      font-size: 11px;
+      border: 1px solid var(--excel-border);
+      border-radius: 2px;
+      margin-bottom: 6px;
+    }
+
+    .filter-select-all {
+      font-weight: bold;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+      margin-bottom: 4px;
+    }
+
+    .filter-check-list {
+      max-height: 160px;
+      overflow-y: auto;
+      margin-bottom: 8px;
+    }
+
+    .filter-check-item {
+      display: block;
+      font-size: 11px;
+      padding: 3px 2px;
+      cursor: pointer;
+      color: #333;
+    }
+    .filter-check-item input { margin-right: 6px; }
+
+    .filter-actions { display: flex; gap: 6px; }
+    .filter-actions button {
+      flex: 1;
+      font-size: 11px;
+      padding: 6px;
+      border-radius: 2px;
+      cursor: pointer;
+      border: 1px solid var(--excel-border);
+    }
+    .btn-apply { background: var(--excel-btn-active); color: #fff; }
+    .btn-apply:hover { opacity: 0.9; }
+    .btn-cancel { background: #eee; color: #333; }
+    .btn-cancel:hover { background: #e2e2e2; }
 
     td {
       padding: 6px 8px;
       border: 1px solid #e0e0e0;
     }
 
-    tr:nth-child(even) {
-      background-color: #f9fbfd;
-    }
-
-    tr:hover {
-      background-color: #edf2f8;
-    }
+    tr:nth-child(even) { background-color: #f9fbfd; }
+    tr:hover { background-color: #edf2f8; }
   </style>
 </head>
 <body>
@@ -200,7 +269,10 @@
 
   <div class="table-toolbar">
     <span id="row-counter"></span>
-    <button class="btn-clear-filters" onclick="clearColumnFilters()">Limpiar filtros de columna</button>
+    <div class="toolbar-right">
+      <span id="sort-indicator"></span>
+      <button class="btn-clear-filters" onclick="clearAll()">Limpiar filtros de columna</button>
+    </div>
   </div>
 
   <!-- Tabla de Datos -->
@@ -219,8 +291,7 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzo0LhRkLz2nU3ydkGWEy-I6B0hYOvpVfUivhjqIZVdrQ_XBLA3X4QFC-hMs021fW0/exec";
 
-    // Estas llaves deben coincidir con las de CANONICAL_COLUMNS en el Apps Script.
-    // El HTML ya no depende de lo que diga la fila 1 de la hoja de Google.
+    // Deben coincidir con las llaves de CANONICAL_COLUMNS en el Apps Script.
     const COLUMNS = [
       { key: 'POSC.',              label: 'POSC.' },
       { key: 'PRUEBA',              label: 'PRUEBA' },
@@ -238,20 +309,39 @@
 
     let allData = [];
 
-    // Filtros de los slicers de arriba
-    let selectedFilters = {
-      Genero: null,
-      Categoría: null,
-      LIGA: null,
-      PRUEBA: null
-    };
+    // Filtros de los slicers de arriba (valor único seleccionado, o null = todos)
+    let selectedFilters = { Genero: null, Categoría: null, LIGA: null, PRUEBA: null };
 
-    // Filtros por columna (los de la tabla)
+    // Filtros de columna (estilo Excel): Set de valores permitidos, o null = todos permitidos
     let columnFilters = {};
     COLUMNS.forEach(c => columnFilters[c.key] = null);
 
+    // Ordenamiento activo de la tabla (una sola columna a la vez, como en Excel)
+    let sortState = { key: null, direction: null };
+
     function getVal(row, col) {
       return row[col.key] ?? '';
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    // Ordena "50m Libre/50m Free", "200m Espalda/200m Back", etc. por distancia numérica ascendente
+    function ordenarValoresPrueba(valores) {
+      return valores.slice().sort((a, b) => {
+        const da = parseInt((String(a).match(/^\d+/) || ['0'])[0], 10);
+        const db = parseInt((String(b).match(/^\d+/) || ['0'])[0], 10);
+        if (da !== db) return da - db;
+        return String(a).localeCompare(String(b), 'es');
+      });
+    }
+
+    function ordenarValores(key, valores) {
+      if (key === 'PRUEBA') return ordenarValoresPrueba(valores);
+      return valores.slice().sort((a, b) => String(a).localeCompare(String(b), 'es', { numeric: true }));
     }
 
     async function loadData() {
@@ -268,10 +358,10 @@
     }
 
     function buildTableHeaders() {
-      const headerRow = document.getElementById('table-headers');
-      headerRow.innerHTML = COLUMNS.map(c => `<th>${c.label}</th>`).join('');
+      document.getElementById('table-headers').innerHTML = COLUMNS.map(c => `<th>${c.label}</th>`).join('');
     }
 
+    // -------------------- Slicers superiores --------------------
     function buildSlicers() {
       createSlicerButtons('Genero', 'slicer-genero');
       createSlicerButtons('Categoría', 'slicer-categoria');
@@ -281,7 +371,8 @@
 
     function createSlicerButtons(field, elementId) {
       const container = document.getElementById(elementId);
-      const uniqueValues = [...new Set(allData.map(item => item[field]).filter(Boolean))].sort();
+      let uniqueValues = [...new Set(allData.map(item => item[field]).filter(Boolean))];
+      uniqueValues = ordenarValores(field, uniqueValues);
 
       container.innerHTML = `<button class="btn-slicer active" onclick="setFilter('${field}', null, this)">Todos</button>`;
 
@@ -296,45 +387,126 @@
 
     function setFilter(field, value, btnElement) {
       selectedFilters[field] = value;
-
       const parent = btnElement.parentElement;
       parent.querySelectorAll('.btn-slicer').forEach(b => b.classList.remove('active'));
       btnElement.classList.add('active');
-
       applyFilters();
     }
 
+    // -------------------- Filtros de columna (estilo Excel) --------------------
     function buildColumnFilters() {
       const filterRow = document.getElementById('filter-row');
-      filterRow.innerHTML = COLUMNS.map(col => {
-        const values = [...new Set(allData.map(row => getVal(row, col)).filter(v => v !== ''))]
-          .sort((a, b) => a.toString().localeCompare(b.toString(), 'es', { numeric: true }));
-
-        const options = values.map(v => `<option value="${v}">${v}</option>`).join('');
-        return `<th>
-          <select data-key="${col.key}" onchange="setColumnFilter('${col.key}', this)">
-            <option value="">(Todos)</option>
-            ${options}
-          </select>
-        </th>`;
-      }).join('');
+      filterRow.innerHTML = COLUMNS.map((col, idx) => `
+        <th>
+          <div class="filter-dropdown">
+            <button type="button" class="btn-filter-toggle" id="toggle-${idx}" onclick="toggleFilterPanel(${idx})">
+              <span>Filtrar</span><span>▾</span>
+            </button>
+            <div class="filter-panel" id="panel-${idx}"></div>
+          </div>
+        </th>
+      `).join('');
     }
 
-    function setColumnFilter(key, selectEl) {
-      columnFilters[key] = selectEl.value || null;
-      selectEl.classList.toggle('filter-active', !!selectEl.value);
-      applyFilters();
+    function toggleFilterPanel(idx) {
+      const panel = document.getElementById('panel-' + idx);
+      const isOpen = panel.style.display === 'block';
+      document.querySelectorAll('.filter-panel').forEach(p => p.style.display = 'none');
+      if (isOpen) return;
+      renderFilterPanel(idx);
+      panel.style.display = 'block';
     }
 
-    function clearColumnFilters() {
-      COLUMNS.forEach(c => columnFilters[c.key] = null);
-      document.querySelectorAll('.filter-row select').forEach(sel => {
-        sel.value = '';
-        sel.classList.remove('filter-active');
+    function renderFilterPanel(idx) {
+      const col = COLUMNS[idx];
+      const panel = document.getElementById('panel-' + idx);
+      const allValues = ordenarValores(col.key, [...new Set(allData.map(row => String(getVal(row, col))).filter(v => v !== ''))]);
+      const current = columnFilters[col.key]; // Set o null (null = todos marcados)
+
+      panel.innerHTML = `
+        <div class="filter-sort-row">
+          <button type="button" onclick="sortByColumn(${idx}, 'asc')">▲ A-Z</button>
+          <button type="button" onclick="sortByColumn(${idx}, 'desc')">▼ Z-A</button>
+        </div>
+        <input type="text" class="filter-search" placeholder="Buscar..." oninput="filterPanelSearch(${idx}, this.value)">
+        <label class="filter-check-item filter-select-all">
+          <input type="checkbox" id="checkall-${idx}" ${!current ? 'checked' : ''} onchange="toggleSelectAll(${idx}, this.checked)">
+          (Seleccionar todo)
+        </label>
+        <div class="filter-check-list" id="checklist-${idx}">
+          ${allValues.map(v => `
+            <label class="filter-check-item">
+              <input type="checkbox" value="${escapeHtml(v)}" ${(!current || current.has(v)) ? 'checked' : ''}>
+              ${escapeHtml(v)}
+            </label>
+          `).join('')}
+        </div>
+        <div class="filter-actions">
+          <button type="button" class="btn-apply" onclick="applyColumnFilter(${idx})">Aceptar</button>
+          <button type="button" class="btn-cancel" onclick="closePanel(${idx})">Cancelar</button>
+        </div>
+      `;
+    }
+
+    function filterPanelSearch(idx, text) {
+      const t = text.toLowerCase();
+      document.querySelectorAll('#checklist-' + idx + ' .filter-check-item').forEach(item => {
+        const label = item.textContent.trim().toLowerCase();
+        item.style.display = label.includes(t) ? 'block' : 'none';
       });
+    }
+
+    function toggleSelectAll(idx, checked) {
+      document.querySelectorAll('#checklist-' + idx + ' input[type=checkbox]').forEach(cb => cb.checked = checked);
+    }
+
+    function applyColumnFilter(idx) {
+      const col = COLUMNS[idx];
+      const checkboxes = [...document.querySelectorAll('#checklist-' + idx + ' input[type=checkbox]')];
+      const checked = checkboxes.filter(cb => cb.checked).map(cb => cb.value);
+
+      if (checked.length === checkboxes.length) {
+        columnFilters[col.key] = null; // todo seleccionado = sin filtro
+      } else {
+        columnFilters[col.key] = new Set(checked);
+      }
+
+      document.getElementById('toggle-' + idx).classList.toggle('filter-active', columnFilters[col.key] !== null);
+      closePanel(idx);
       applyFilters();
     }
 
+    function closePanel(idx) {
+      document.getElementById('panel-' + idx).style.display = 'none';
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.filter-dropdown')) {
+        document.querySelectorAll('.filter-panel').forEach(p => p.style.display = 'none');
+      }
+    });
+
+    // -------------------- Ordenamiento de la tabla --------------------
+    function sortByColumn(idx, direction) {
+      sortState = { key: COLUMNS[idx].key, direction };
+      closePanel(idx);
+      applyFilters();
+    }
+
+    function clearSort() {
+      sortState = { key: null, direction: null };
+      applyFilters();
+    }
+
+    // -------------------- Limpiar todo --------------------
+    function clearAll() {
+      COLUMNS.forEach(c => columnFilters[c.key] = null);
+      sortState = { key: null, direction: null };
+      buildColumnFilters();
+      applyFilters();
+    }
+
+    // -------------------- Filtrado + render --------------------
     function applyFilters() {
       let filtered = allData.filter(row => {
         const passSlicers =
@@ -346,11 +518,24 @@
         if (!passSlicers) return false;
 
         return COLUMNS.every(col => {
-          const filterVal = columnFilters[col.key];
-          if (!filterVal) return true;
-          return String(getVal(row, col)) === filterVal;
+          const filterSet = columnFilters[col.key];
+          if (!filterSet) return true;
+          return filterSet.has(String(getVal(row, col)));
         });
       });
+
+      if (sortState.key) {
+        const col = COLUMNS.find(c => c.key === sortState.key);
+        filtered = filtered.slice().sort((a, b) => {
+          const cmp = String(getVal(a, col)).localeCompare(String(getVal(b, col)), 'es', { numeric: true });
+          return sortState.direction === 'desc' ? -cmp : cmp;
+        });
+      }
+
+      const indicator = document.getElementById('sort-indicator');
+      indicator.innerHTML = sortState.key
+        ? `Ordenado por ${sortState.key} ${sortState.direction === 'desc' ? '▼' : '▲'} <a href="#" onclick="clearSort();return false;">(quitar)</a>`
+        : '';
 
       renderTable(filtered);
     }
