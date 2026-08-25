@@ -159,7 +159,7 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzLaW4Pnh9y3u72tMucf4pThol2Qd7jxb_A7V1O_NrHyEwmS_xKtiiOXEgChxP1ecbFaw/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzo0LhRkLz2nU3ydkGWEy-I6B0hYOvpVfUivhjqIZVdrQ_XBLA3X4QFC-hMs021fW0/exec";
     let allData = [];
     let selectedFilters = {
       Categoría: null,
