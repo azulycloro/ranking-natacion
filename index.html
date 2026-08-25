@@ -21,7 +21,7 @@
 
     .slicers-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 15px;
       margin-bottom: 25px;
       background: #ffffff;
@@ -46,13 +46,26 @@
       color: #1f4e79;
     }
 
+    /* Contenedor con scroll vertical fijo, como el segmentador de Sheets */
     .slicer-buttons {
       display: flex;
       flex-wrap: wrap;
+      align-content: flex-start;
       gap: 4px;
       padding: 8px;
-      max-height: 160px;
-      overflow-y: auto;
+      height: 180px;
+      overflow-y: scroll;
+    }
+
+    .slicer-buttons::-webkit-scrollbar {
+      width: 8px;
+    }
+    .slicer-buttons::-webkit-scrollbar-track {
+      background: #f0f0f0;
+    }
+    .slicer-buttons::-webkit-scrollbar-thumb {
+      background-color: var(--excel-border);
+      border-radius: 4px;
     }
 
     .btn-slicer {
@@ -64,6 +77,8 @@
       cursor: pointer;
       border-radius: 2px;
       flex: 1 1 auto;
+      min-width: 70px;
+      height: fit-content;
       text-align: center;
       transition: all 0.1s ease;
     }
@@ -78,7 +93,29 @@
       font-weight: bold;
     }
 
-    /* Tabla */
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .btn-clear-filters {
+      background-color: #eef1f6;
+      border: 1px solid var(--excel-border);
+      color: #1f4e79;
+      padding: 4px 10px;
+      font-size: 11px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .btn-clear-filters:hover {
+      background-color: #dde6f2;
+    }
+
     .table-container {
       overflow-x: auto;
       background: #fff;
@@ -98,6 +135,29 @@
       text-align: left;
       font-weight: 600;
       border: 1px solid #103356;
+      white-space: nowrap;
+    }
+
+    .filter-row th {
+      background-color: #eef1f6;
+      padding: 4px;
+    }
+
+    .filter-row select {
+      width: 100%;
+      font-size: 11px;
+      padding: 3px 2px;
+      border: 1px solid var(--excel-border);
+      border-radius: 2px;
+      background-color: #fff;
+      color: #333;
+      box-sizing: border-box;
+    }
+
+    .filter-row select.filter-active {
+      background-color: #dce8ff;
+      border-color: var(--excel-btn-active);
+      font-weight: bold;
     }
 
     td {
@@ -121,6 +181,10 @@
   <!-- Segmentadores (Slicers) -->
   <div class="slicers-container">
     <div class="slicer-group">
+      <div class="slicer-title">Género</div>
+      <div class="slicer-buttons" id="slicer-genero"></div>
+    </div>
+    <div class="slicer-group">
       <div class="slicer-title">Categoría</div>
       <div class="slicer-buttons" id="slicer-categoria"></div>
     </div>
@@ -134,51 +198,82 @@
     </div>
   </div>
 
+  <div class="table-toolbar">
+    <span id="row-counter"></span>
+    <button class="btn-clear-filters" onclick="clearColumnFilters()">Limpiar filtros de columna</button>
+  </div>
+
   <!-- Tabla de Datos -->
   <div class="table-container">
     <table id="ranking-table">
       <thead>
-        <tr id="table-headers">
-          <th>POSC.</th>
-          <th>PRUEBA</th>
-          <th>NADADOR</th>
-          <th>Nac. (Año-mes)</th>
-          <th>Tiempo</th>
-          <th>P. WA</th>
-          <th>Fecha Torneo</th>
-          <th>LIGA</th>
-          <th>CLUB</th>
-          <th>Categoría</th>
-          <th>Edad</th>
-        </tr>
+        <tr id="table-headers"></tr>
+        <tr id="filter-row" class="filter-row"></tr>
       </thead>
       <tbody id="table-body">
-        <tr><td colspan="11">Cargando datos...</td></tr>
+        <tr><td colspan="12">Cargando datos...</td></tr>
       </tbody>
     </table>
   </div>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzo0LhRkLz2nU3ydkGWEy-I6B0hYOvpVfUivhjqIZVdrQ_XBLA3X4QFC-hMs021fW0/exec";
+
+    // Estas llaves deben coincidir con las de CANONICAL_COLUMNS en el Apps Script.
+    // El HTML ya no depende de lo que diga la fila 1 de la hoja de Google.
+    const COLUMNS = [
+      { key: 'POSC.',              label: 'POSC.' },
+      { key: 'PRUEBA',              label: 'PRUEBA' },
+      { key: 'NADADOR',             label: 'NADADOR', bold: true },
+      { key: 'Nac. (Año-mes)',      label: 'Nac. (Año-mes)' },
+      { key: 'Tiempo',              label: 'Tiempo' },
+      { key: 'P. WA',               label: 'P. WA' },
+      { key: 'Fecha Torneo',        label: 'Fecha Torneo' },
+      { key: 'LIGA',                label: 'LIGA' },
+      { key: 'CLUB',                label: 'CLUB' },
+      { key: 'Genero',              label: 'Genero' },
+      { key: 'Categoría',           label: 'Categoría' },
+      { key: 'Edad',                label: 'Edad' }
+    ];
+
     let allData = [];
+
+    // Filtros de los slicers de arriba
     let selectedFilters = {
+      Genero: null,
       Categoría: null,
       LIGA: null,
       PRUEBA: null
     };
 
+    // Filtros por columna (los de la tabla)
+    let columnFilters = {};
+    COLUMNS.forEach(c => columnFilters[c.key] = null);
+
+    function getVal(row, col) {
+      return row[col.key] ?? '';
+    }
+
     async function loadData() {
       try {
         const res = await fetch(API_URL);
         allData = await res.json();
+        buildTableHeaders();
         buildSlicers();
-        renderTable(allData);
+        buildColumnFilters();
+        applyFilters();
       } catch (err) {
-        document.getElementById('table-body').innerHTML = `<tr><td colspan="11">Error al cargar datos.</td></tr>`;
+        document.getElementById('table-body').innerHTML = `<tr><td colspan="${COLUMNS.length}">Error al cargar datos.</td></tr>`;
       }
     }
 
+    function buildTableHeaders() {
+      const headerRow = document.getElementById('table-headers');
+      headerRow.innerHTML = COLUMNS.map(c => `<th>${c.label}</th>`).join('');
+    }
+
     function buildSlicers() {
+      createSlicerButtons('Genero', 'slicer-genero');
       createSlicerButtons('Categoría', 'slicer-categoria');
       createSlicerButtons('LIGA', 'slicer-liga');
       createSlicerButtons('PRUEBA', 'slicer-prueba');
@@ -187,9 +282,9 @@
     function createSlicerButtons(field, elementId) {
       const container = document.getElementById(elementId);
       const uniqueValues = [...new Set(allData.map(item => item[field]).filter(Boolean))].sort();
-      
+
       container.innerHTML = `<button class="btn-slicer active" onclick="setFilter('${field}', null, this)">Todos</button>`;
-      
+
       uniqueValues.forEach(val => {
         const btn = document.createElement('button');
         btn.className = 'btn-slicer';
@@ -201,8 +296,7 @@
 
     function setFilter(field, value, btnElement) {
       selectedFilters[field] = value;
-      
-      // Manejar estilo activo en botones
+
       const parent = btnElement.parentElement;
       parent.querySelectorAll('.btn-slicer').forEach(b => b.classList.remove('active'));
       btnElement.classList.add('active');
@@ -210,35 +304,72 @@
       applyFilters();
     }
 
+    function buildColumnFilters() {
+      const filterRow = document.getElementById('filter-row');
+      filterRow.innerHTML = COLUMNS.map(col => {
+        const values = [...new Set(allData.map(row => getVal(row, col)).filter(v => v !== ''))]
+          .sort((a, b) => a.toString().localeCompare(b.toString(), 'es', { numeric: true }));
+
+        const options = values.map(v => `<option value="${v}">${v}</option>`).join('');
+        return `<th>
+          <select data-key="${col.key}" onchange="setColumnFilter('${col.key}', this)">
+            <option value="">(Todos)</option>
+            ${options}
+          </select>
+        </th>`;
+      }).join('');
+    }
+
+    function setColumnFilter(key, selectEl) {
+      columnFilters[key] = selectEl.value || null;
+      selectEl.classList.toggle('filter-active', !!selectEl.value);
+      applyFilters();
+    }
+
+    function clearColumnFilters() {
+      COLUMNS.forEach(c => columnFilters[c.key] = null);
+      document.querySelectorAll('.filter-row select').forEach(sel => {
+        sel.value = '';
+        sel.classList.remove('filter-active');
+      });
+      applyFilters();
+    }
+
     function applyFilters() {
       let filtered = allData.filter(row => {
-        return (!selectedFilters.Categoría || row.Categoría === selectedFilters.Categoría) &&
-               (!selectedFilters.LIGA || row.LIGA === selectedFilters.LIGA) &&
-               (!selectedFilters.PRUEBA || row.PRUEBA === selectedFilters.PRUEBA);
+        const passSlicers =
+          (!selectedFilters.Genero || row.Genero === selectedFilters.Genero) &&
+          (!selectedFilters.Categoría || row.Categoría === selectedFilters.Categoría) &&
+          (!selectedFilters.LIGA || row.LIGA === selectedFilters.LIGA) &&
+          (!selectedFilters.PRUEBA || row.PRUEBA === selectedFilters.PRUEBA);
+
+        if (!passSlicers) return false;
+
+        return COLUMNS.every(col => {
+          const filterVal = columnFilters[col.key];
+          if (!filterVal) return true;
+          return String(getVal(row, col)) === filterVal;
+        });
       });
+
       renderTable(filtered);
     }
 
     function renderTable(data) {
       const tbody = document.getElementById('table-body');
+      document.getElementById('row-counter').innerText = `${data.length} resultado${data.length === 1 ? '' : 's'}`;
+
       if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="11">No se encontraron resultados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${COLUMNS.length}">No se encontraron resultados.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = data.map(row => `
         <tr>
-          <td>${row['POSC.'] || ''}</td>
-          <td>${row['PRUEBA'] || ''}</td>
-          <td><b>${row['NADADOR'] || ''}</b></td>
-          <td>${row['Nac. (Año-mes)'] || ''}</td>
-          <td>${row['Tiempo'] || ''}</td>
-          <td>${row['P. WA'] || row['P.WA'] || ''}</td>
-          <td>${row['Fecha Torneo'] || ''}</td>
-          <td>${row['LIGA'] || ''}</td>
-          <td>${row['CLUB'] || ''}</td>
-          <td>${row['Categoría'] || ''}</td>
-          <td>${row['Edad'] || ''}</td>
+          ${COLUMNS.map(col => {
+            const val = getVal(row, col);
+            return col.bold ? `<td><b>${val}</b></td>` : `<td>${val}</td>`;
+          }).join('')}
         </tr>
       `).join('');
     }
