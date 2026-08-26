@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ranking Natación - Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
       --excel-header-bg: #1f4e79;
@@ -12,11 +13,27 @@
       --excel-border: #8ea9db;
     }
 
+    * { box-sizing: border-box; }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f2f2f2;
-      margin: 20px;
+      margin: 0;
       color: #333;
+    }
+
+    /* Barra superior gris (igual estilo a la referencia) */
+    .top-bar {
+      background-color: #e5e5e5;
+      color: #666;
+      text-align: center;
+      padding: 6px 0;
+      font-size: 13px;
+      width: 100%;
+    }
+
+    .page-container {
+      padding: 20px;
     }
 
     .slicers-container {
@@ -52,7 +69,7 @@
       align-content: flex-start;
       gap: 4px;
       padding: 8px;
-      height: 180px;
+      height: 120px; /* 2/3 de 180px */
       overflow-y: scroll;
     }
 
@@ -94,7 +111,7 @@
 
     .toolbar-right { display: flex; gap: 8px; align-items: center; }
 
-    .btn-clear-filters {
+    .btn-clear-filters, .btn-export-excel {
       background-color: #eef1f6;
       border: 1px solid var(--excel-border);
       color: #1f4e79;
@@ -103,7 +120,19 @@
       border-radius: 2px;
       cursor: pointer;
     }
-    .btn-clear-filters:hover { background-color: #dde6f2; }
+    .btn-clear-filters:hover, .btn-export-excel:hover { background-color: #dde6f2; }
+
+    .btn-export-excel {
+      background-color: #217346; /* verde estilo Excel */
+      color: #fff;
+      border-color: #17532f;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-export-excel:hover { background-color: #1a5c38; }
+    .btn-export-excel:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .table-container {
       overflow-x: auto;
@@ -241,55 +270,71 @@
 
     tr:nth-child(even) { background-color: #f9fbfd; }
     tr:hover { background-color: #edf2f8; }
+
+    .stale-badge {
+      font-size: 10px;
+      color: #b06a00;
+      margin-left: 6px;
+    }
   </style>
 </head>
 <body>
 
-  <h2>Dashboard de Ranking y Resultados</h2>
+  <div class="top-bar">Realizado por: Juan Albarracin.</div>
 
-  <!-- Segmentadores (Slicers) -->
-  <div class="slicers-container">
-    <div class="slicer-group">
-      <div class="slicer-title">Género</div>
-      <div class="slicer-buttons" id="slicer-genero"></div>
-    </div>
-    <div class="slicer-group">
-      <div class="slicer-title">Categoría</div>
-      <div class="slicer-buttons" id="slicer-categoria"></div>
-    </div>
-    <div class="slicer-group">
-      <div class="slicer-title">Liga</div>
-      <div class="slicer-buttons" id="slicer-liga"></div>
-    </div>
-    <div class="slicer-group">
-      <div class="slicer-title">Prueba</div>
-      <div class="slicer-buttons" id="slicer-prueba"></div>
-    </div>
-  </div>
+  <div class="page-container">
+    <h2>Dashboard de Ranking y Resultados</h2>
 
-  <div class="table-toolbar">
-    <span id="row-counter"></span>
-    <div class="toolbar-right">
-      <span id="sort-indicator"></span>
-      <button class="btn-clear-filters" onclick="clearAll()">Limpiar filtros de columna</button>
+    <!-- Segmentadores (Slicers) -->
+    <div class="slicers-container">
+      <div class="slicer-group">
+        <div class="slicer-title">Género</div>
+        <div class="slicer-buttons" id="slicer-genero"></div>
+      </div>
+      <div class="slicer-group">
+        <div class="slicer-title">Categoría</div>
+        <div class="slicer-buttons" id="slicer-categoria"></div>
+      </div>
+      <div class="slicer-group">
+        <div class="slicer-title">Liga</div>
+        <div class="slicer-buttons" id="slicer-liga"></div>
+      </div>
+      <div class="slicer-group">
+        <div class="slicer-title">Prueba</div>
+        <div class="slicer-buttons" id="slicer-prueba"></div>
+      </div>
     </div>
-  </div>
 
-  <!-- Tabla de Datos -->
-  <div class="table-container">
-    <table id="ranking-table">
-      <thead>
-        <tr id="table-headers"></tr>
-        <tr id="filter-row" class="filter-row"></tr>
-      </thead>
-      <tbody id="table-body">
-        <tr><td colspan="12">Cargando datos...</td></tr>
-      </tbody>
-    </table>
+    <div class="table-toolbar">
+      <span id="row-counter"></span>
+      <div class="toolbar-right">
+        <span id="sort-indicator"></span>
+        <button class="btn-export-excel" id="btn-export" onclick="exportToExcel()">⬇ Descargar Excel</button>
+        <button class="btn-clear-filters" onclick="clearAll()">Limpiar filtros de columna</button>
+      </div>
+    </div>
+
+    <!-- Tabla de Datos -->
+    <div class="table-container">
+      <table id="ranking-table">
+        <thead>
+          <tr id="table-headers"></tr>
+          <tr id="filter-row" class="filter-row"></tr>
+        </thead>
+        <tbody id="table-body">
+          <tr><td colspan="12">Cargando datos...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzo0LhRkLz2nU3ydkGWEy-I6B0hYOvpVfUivhjqIZVdrQ_XBLA3X4QFC-hMs021fW0/exec";
+
+    // ---- Caché local (stale-while-revalidate) ----
+    // Muestra datos guardados instantáneamente mientras trae datos frescos en segundo plano.
+    const CACHE_KEY = 'ranking_natacion_cache_v1';
+    const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos: tras este tiempo se refresca igual, aunque se muestre lo cacheado primero
 
     // Deben coincidir con las llaves de CANONICAL_COLUMNS en el Apps Script.
     const COLUMNS = [
@@ -344,16 +389,65 @@
       return valores.slice().sort((a, b) => String(a).localeCompare(String(b), 'es', { numeric: true }));
     }
 
+    // ---- Carga de datos con caché stale-while-revalidate ----
+    function readCache() {
+      try {
+        const raw = sessionStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function writeCache(data) {
+      try {
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+      } catch (e) { /* si sessionStorage falla, seguimos sin caché */ }
+    }
+
     async function loadData() {
+      const cached = readCache();
+
+      if (cached) {
+        // Pintamos de inmediato con lo que ya teníamos guardado (sensación instantánea)
+        allData = cached.data;
+        buildTableHeaders();
+        buildSlicers();
+        buildColumnFilters();
+        applyFilters();
+
+        const isFresh = (Date.now() - cached.ts) < CACHE_TTL_MS;
+        if (isFresh) {
+          // Aún vigente: no hace falta ir a buscar datos nuevos ahora mismo,
+          // pero igual refrescamos en segundo plano sin bloquear la UI.
+          refreshInBackground();
+          return;
+        }
+      } else {
+        document.getElementById('table-body').innerHTML =
+          `<tr><td colspan="${COLUMNS.length}">Cargando datos...</td></tr>`;
+      }
+
+      await refreshInBackground(!cached);
+    }
+
+    async function refreshInBackground(isFirstLoad) {
       try {
         const res = await fetch(API_URL);
-        allData = await res.json();
+        const freshData = await res.json();
+        allData = freshData;
+        writeCache(freshData);
         buildTableHeaders();
         buildSlicers();
         buildColumnFilters();
         applyFilters();
       } catch (err) {
-        document.getElementById('table-body').innerHTML = `<tr><td colspan="${COLUMNS.length}">Error al cargar datos.</td></tr>`;
+        if (isFirstLoad) {
+          document.getElementById('table-body').innerHTML =
+            `<tr><td colspan="${COLUMNS.length}">Error al cargar datos.</td></tr>`;
+        }
+        // Si ya había datos en caché mostrados, los dejamos así aunque falle el refresco.
       }
     }
 
@@ -374,15 +468,26 @@
       let uniqueValues = [...new Set(allData.map(item => item[field]).filter(Boolean))];
       uniqueValues = ordenarValores(field, uniqueValues);
 
-      container.innerHTML = `<button class="btn-slicer active" onclick="setFilter('${field}', null, this)">Todos</button>`;
+      // Conserva la selección activa si ya existía (por ejemplo, tras un refresco en segundo plano)
+      const currentSelection = selectedFilters[field];
+
+      const frag = document.createDocumentFragment();
+      const btnTodos = document.createElement('button');
+      btnTodos.className = 'btn-slicer' + (currentSelection === null ? ' active' : '');
+      btnTodos.innerText = 'Todos';
+      btnTodos.onclick = () => setFilter(field, null, btnTodos);
+      frag.appendChild(btnTodos);
 
       uniqueValues.forEach(val => {
         const btn = document.createElement('button');
-        btn.className = 'btn-slicer';
+        btn.className = 'btn-slicer' + (currentSelection === val ? ' active' : '');
         btn.innerText = val;
         btn.onclick = () => setFilter(field, val, btn);
-        container.appendChild(btn);
+        frag.appendChild(btn);
       });
+
+      container.innerHTML = '';
+      container.appendChild(frag);
     }
 
     function setFilter(field, value, btnElement) {
@@ -399,7 +504,7 @@
       filterRow.innerHTML = COLUMNS.map((col, idx) => `
         <th>
           <div class="filter-dropdown">
-            <button type="button" class="btn-filter-toggle" id="toggle-${idx}" onclick="toggleFilterPanel(${idx})">
+            <button type="button" class="btn-filter-toggle${columnFilters[col.key] ? ' filter-active' : ''}" id="toggle-${idx}" onclick="toggleFilterPanel(${idx})">
               <span>Filtrar</span><span>▾</span>
             </button>
             <div class="filter-panel" id="panel-${idx}"></div>
@@ -507,6 +612,8 @@
     }
 
     // -------------------- Filtrado + render --------------------
+    let currentFiltered = []; // usado también por el botón de exportar a Excel
+
     function applyFilters() {
       let filtered = allData.filter(row => {
         const passSlicers =
@@ -537,6 +644,7 @@
         ? `Ordenado por ${sortState.key} ${sortState.direction === 'desc' ? '▼' : '▲'} <a href="#" onclick="clearSort();return false;">(quitar)</a>`
         : '';
 
+      currentFiltered = filtered;
       renderTable(filtered);
     }
 
@@ -549,14 +657,59 @@
         return;
       }
 
-      tbody.innerHTML = data.map(row => `
-        <tr>
-          ${COLUMNS.map(col => {
-            const val = getVal(row, col);
-            return col.bold ? `<td><b>${val}</b></td>` : `<td>${val}</td>`;
-          }).join('')}
-        </tr>
-      `).join('');
+      // Construcción vía DocumentFragment: más rápido que reconstruir todo el innerHTML en tablas grandes
+      const frag = document.createDocumentFragment();
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        COLUMNS.forEach(col => {
+          const td = document.createElement('td');
+          const val = getVal(row, col);
+          if (col.bold) {
+            const b = document.createElement('b');
+            b.textContent = val;
+            td.appendChild(b);
+          } else {
+            td.textContent = val;
+          }
+          tr.appendChild(td);
+        });
+        frag.appendChild(tr);
+      });
+
+      tbody.innerHTML = '';
+      tbody.appendChild(frag);
+    }
+
+    // -------------------- Exportar a Excel --------------------
+    function exportToExcel() {
+      if (!currentFiltered.length) {
+        alert('No hay datos para exportar con los filtros actuales.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-export');
+      btn.disabled = true;
+      const originalText = btn.innerText;
+      btn.innerText = 'Generando...';
+
+      try {
+        // Exporta exactamente lo que se ve en pantalla (con filtros y orden aplicados)
+        const rows = currentFiltered.map(row => {
+          const obj = {};
+          COLUMNS.forEach(col => { obj[col.label] = getVal(row, col); });
+          return obj;
+        });
+
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Ranking');
+
+        const fecha = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `ranking_natacion_${fecha}.xlsx`);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+      }
     }
 
     loadData();
