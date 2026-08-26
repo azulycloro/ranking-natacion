@@ -22,7 +22,6 @@
       color: #333;
     }
 
-    /* Barra superior gris (igual estilo a la referencia) */
     .top-bar {
       background-color: #e5e5e5;
       color: #666;
@@ -33,16 +32,16 @@
     }
 
     .page-container {
-      padding: 20px;
+      padding: 15px;
     }
 
     .slicers-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-bottom: 25px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
       background: #ffffff;
-      padding: 15px;
+      padding: 12px;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
@@ -56,7 +55,7 @@
 
     .slicer-title {
       background-color: #e9eef4;
-      padding: 6px 8px 6px 10px;
+      padding: 6px 10px;
       font-weight: bold;
       font-size: 13px;
       border-bottom: 1px solid var(--excel-border);
@@ -74,8 +73,8 @@
     }
 
     .icon-btn {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -84,8 +83,6 @@
       border-radius: 3px;
       cursor: pointer;
       font-size: 12px;
-      line-height: 1;
-      padding: 0;
       color: #1f4e79;
     }
     .icon-btn:hover { background-color: #dde6f2; }
@@ -101,11 +98,12 @@
       align-content: flex-start;
       gap: 4px;
       padding: 8px;
-      height: 120px; /* 2/3 de 180px */
-      overflow-y: scroll;
+      max-height: 140px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    .slicer-buttons::-webkit-scrollbar { width: 8px; }
+    .slicer-buttons::-webkit-scrollbar { width: 6px; }
     .slicer-buttons::-webkit-scrollbar-track { background: #f0f0f0; }
     .slicer-buttons::-webkit-scrollbar-thumb { background-color: var(--excel-border); border-radius: 4px; }
 
@@ -118,14 +116,13 @@
       cursor: pointer;
       border-radius: 2px;
       flex: 1 1 auto;
-      min-width: 70px;
-      height: fit-content;
+      min-width: 65px;
       text-align: center;
-      transition: all 0.1s ease;
+      transition: background-color 0.1s ease;
+      touch-action: manipulation;
     }
 
     .btn-slicer:hover { background-color: #8ea9db; }
-
     .btn-slicer.active {
       background-color: var(--excel-btn-active);
       color: #ffffff;
@@ -136,32 +133,32 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-size: 12px;
       color: #555;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 8px;
     }
 
     .toolbar-left { display: flex; flex-direction: column; gap: 2px; }
     .toolbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-    #last-update { font-size: 11px; color: #888; }
+    #last-update { font-size: 11px; color: #777; }
 
-    .btn-clear-filters, .btn-export-excel, .btn-refresh {
+    .btn-clear-filters, .btn-export-excel {
       background-color: #eef1f6;
       border: 1px solid var(--excel-border);
       color: #1f4e79;
-      padding: 4px 10px;
+      padding: 6px 12px;
       font-size: 11px;
       border-radius: 2px;
       cursor: pointer;
+      touch-action: manipulation;
     }
-    .btn-clear-filters:hover, .btn-export-excel:hover, .btn-refresh:hover { background-color: #dde6f2; }
-    .btn-refresh:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-clear-filters:hover { background-color: #dde6f2; }
 
     .btn-export-excel {
-      background-color: #217346; /* verde estilo Excel */
+      background-color: #217346;
       color: #fff;
       border-color: #17532f;
       font-weight: bold;
@@ -176,6 +173,9 @@
       overflow-x: auto;
       background: #fff;
       border: 1px solid #ccc;
+      max-height: 70vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     table {
@@ -192,15 +192,19 @@
       font-weight: 600;
       border: 1px solid #103356;
       white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .filter-row th {
       background-color: #eef1f6;
       padding: 4px;
-      position: relative;
+      position: sticky;
+      top: 33px;
+      z-index: 9;
     }
 
-    /* Dropdown de filtro tipo Excel */
     .filter-dropdown { position: relative; }
 
     .btn-filter-toggle {
@@ -215,9 +219,7 @@
       padding: 4px 6px;
       border-radius: 2px;
       cursor: pointer;
-      box-sizing: border-box;
     }
-    .btn-filter-toggle:hover { background-color: #f4f7fb; }
     .btn-filter-toggle.filter-active {
       background-color: #dce8ff;
       border-color: var(--excel-btn-active);
@@ -231,35 +233,32 @@
       top: 100%;
       left: 0;
       z-index: 100;
-      width: 230px;
+      width: 240px;
       background: #fff;
       border: 1px solid var(--excel-border);
       border-radius: 4px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
       padding: 8px;
       text-align: left;
-      white-space: normal;
       font-weight: normal;
     }
 
     .filter-sort-row { display: flex; gap: 4px; margin-bottom: 6px; }
     .filter-sort-row button {
       flex: 1;
-      font-size: 10px;
-      padding: 5px 2px;
+      font-size: 11px;
+      padding: 6px 2px;
       border: 1px solid var(--excel-border);
       background: #eef1f6;
       border-radius: 2px;
       cursor: pointer;
       color: #1f4e79;
     }
-    .filter-sort-row button:hover { background: #dde6f2; }
 
     .filter-search {
       width: 100%;
-      box-sizing: border-box;
-      padding: 5px 6px;
-      font-size: 11px;
+      padding: 6px;
+      font-size: 12px;
       border: 1px solid var(--excel-border);
       border-radius: 2px;
       margin-bottom: 6px;
@@ -268,46 +267,73 @@
     .filter-select-all {
       font-weight: bold;
       border-bottom: 1px solid #ddd;
-      padding-bottom: 5px;
+      padding-bottom: 6px;
       margin-bottom: 4px;
     }
 
     .filter-check-list {
-      max-height: 160px;
+      max-height: 180px;
       overflow-y: auto;
       margin-bottom: 8px;
     }
 
     .filter-check-item {
       display: block;
-      font-size: 11px;
-      padding: 3px 2px;
+      font-size: 12px;
+      padding: 4px 2px;
       cursor: pointer;
       color: #333;
     }
-    .filter-check-item input { margin-right: 6px; }
+    .filter-check-item input { margin-right: 6px; transform: scale(1.1); }
 
     .filter-actions { display: flex; gap: 6px; }
     .filter-actions button {
       flex: 1;
       font-size: 11px;
-      padding: 6px;
+      padding: 8px;
       border-radius: 2px;
       cursor: pointer;
       border: 1px solid var(--excel-border);
     }
     .btn-apply { background: var(--excel-btn-active); color: #fff; }
-    .btn-apply:hover { opacity: 0.9; }
     .btn-cancel { background: #eee; color: #333; }
-    .btn-cancel:hover { background: #e2e2e2; }
+
+    .load-more-container {
+      text-align: center;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+
+    .btn-load-more {
+      background-color: var(--excel-btn-active);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      font-size: 12px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
 
     td {
       padding: 6px 8px;
       border: 1px solid #e0e0e0;
+      white-space: nowrap;
     }
 
     tr:nth-child(even) { background-color: #f9fbfd; }
     tr:hover { background-color: #edf2f8; }
+
+    /* Ajustes específicos para Móviles */
+    @media (max-width: 600px) {
+      .page-container { padding: 8px; }
+      .slicers-container { grid-template-columns: 1fr; gap: 8px; padding: 8px; }
+      .slicer-buttons { max-height: 110px; }
+      .table-toolbar { flex-direction: column; align-items: flex-start; }
+      .toolbar-right { width: 100%; justify-content: space-between; }
+      .filter-panel { position: fixed; left: 5%; right: 5%; top: 20%; width: 90%; }
+    }
   </style>
 </head>
 <body>
@@ -368,7 +394,6 @@
       </div>
       <div class="toolbar-right">
         <span id="sort-indicator"></span>
-        <button class="btn-refresh" id="btn-refresh" onclick="manualRefresh()">🔄 Actualizar datos</button>
         <button class="btn-export-excel" id="btn-export" onclick="exportToExcel()">⬇ Descargar Excel</button>
         <button class="btn-clear-filters" onclick="clearAll()">Limpiar filtros de columna</button>
       </div>
@@ -386,43 +411,37 @@
         </tbody>
       </table>
     </div>
+    <div id="load-more-box" class="load-more-container" style="display: none;">
+      <button class="btn-load-more" onclick="renderMoreRows()">Cargar más filas...</button>
+    </div>
   </div>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzo0LhRkLz2nU3ydkGWEy-I6B0hYOvpVfUivhjqIZVdrQ_XBLA3X4QFC-hMs021fW0/exec";
-
-    // ---- Caché local (stale-while-revalidate) ----
-    // Los datos en el origen solo se actualizan 1 vez al día (2am vía trigger de Apps Script),
-    // así que NO tiene sentido pedirle datos frescos al servidor en cada visita.
-    // Guardamos en sessionStorage (se borra solo al cerrar la pestaña/navegador) y solo
-    // volvemos a pedir datos si la caché venció (CACHE_TTL_MS) o si el usuario lo pide manualmente.
     const CACHE_KEY = 'ranking_natacion_cache_v1';
-    const CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12 horas: suficiente para cubrir la actualización diaria de las 2am
+    const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+    
+    // Control de límite de filas para acelerar renderizado móvil
+    const PAGE_SIZE = 100;
+    let currentRenderLimit = PAGE_SIZE;
 
-    // Deben coincidir con las llaves de CANONICAL_COLUMNS en el Apps Script.
     const COLUMNS = [
-      { key: 'POSC.',              label: 'POSC.' },
-      { key: 'PRUEBA',              label: 'PRUEBA' },
-      { key: 'NADADOR',             label: 'NADADOR', bold: true },
-      { key: 'Nac. (Año-mes)',      label: 'Nac. (Año-mes)' },
-      { key: 'Tiempo',              label: 'Tiempo' },
-      { key: 'P. WA',               label: 'P. WA' },
-      { key: 'Fecha Torneo',        label: 'Fecha Torneo' },
-      { key: 'LIGA',                label: 'LIGA' },
-      { key: 'CLUB',                label: 'CLUB' },
-      { key: 'Genero',              label: 'Genero' },
-      { key: 'Categoría',           label: 'Categoría' },
-      { key: 'Edad',                label: 'Edad' }
+      { key: 'POSC.',            label: 'POSC.' },
+      { key: 'PRUEBA',           label: 'PRUEBA' },
+      { key: 'NADADOR',          label: 'NADADOR', bold: true },
+      { key: 'Nac. (Año-mes)',   label: 'Nac. (Año-mes)' },
+      { key: 'Tiempo',           label: 'Tiempo' },
+      { key: 'P. WA',            label: 'P. WA' },
+      { key: 'Fecha Torneo',     label: 'Fecha Torneo' },
+      { key: 'LIGA',             label: 'LIGA' },
+      { key: 'CLUB',             label: 'CLUB' },
+      { key: 'Genero',           label: 'Genero' },
+      { key: 'Categoría',        label: 'Categoría' },
+      { key: 'Edad',             label: 'Edad' }
     ];
 
     let allData = [];
-
-    // Filtros de los segmentadores de arriba.
-    // Cada valor es: null (= "Todos", sin filtro) o un Set con los valores seleccionados (multi-selección).
     let selectedFilters = { Genero: null, Categoría: null, LIGA: null, PRUEBA: null };
-
-    // Modo de selección múltiple por segmentador (se activa con el icono 🗹).
-    // false = clic reemplaza la selección (como antes). true = clic acumula/quita valores.
     let multiSelectMode = { Genero: false, Categoría: false, LIGA: false, PRUEBA: false };
 
     const SLICER_FIELD_TO_ELEMENT = {
@@ -432,16 +451,11 @@
       PRUEBA: 'slicer-prueba'
     };
 
-    // Filtros de columna (estilo Excel): Set de valores permitidos, o null = todos permitidos
     let columnFilters = {};
     COLUMNS.forEach(c => columnFilters[c.key] = null);
-
-    // Ordenamiento activo de la tabla (una sola columna a la vez, como en Excel)
     let sortState = { key: null, direction: null };
 
-    function getVal(row, col) {
-      return row[col.key] ?? '';
-    }
+    function getVal(row, col) { return row[col.key] ?? ''; }
 
     function escapeHtml(str) {
       return String(str)
@@ -449,7 +463,6 @@
         .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
-    // Ordena "50m Libre/50m Free", "200m Espalda/200m Back", etc. por distancia numérica ascendente
     function ordenarValoresPrueba(valores) {
       return valores.slice().sort((a, b) => {
         const da = parseInt((String(a).match(/^\d+/) || ['0'])[0], 10);
@@ -464,22 +477,19 @@
       return valores.slice().sort((a, b) => String(a).localeCompare(String(b), 'es', { numeric: true }));
     }
 
-    // ---- Carga de datos con caché stale-while-revalidate ----
     function readCache() {
       try {
         const raw = sessionStorage.getItem(CACHE_KEY);
         if (!raw) return null;
         return JSON.parse(raw);
-      } catch (e) {
-        return null;
-      }
+      } catch (e) { return null; }
     }
 
     function writeCache(data) {
       const ts = Date.now();
       try {
         sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts }));
-      } catch (e) { /* si sessionStorage falla, seguimos sin caché */ }
+      } catch (e) {}
       renderLastUpdate(ts);
     }
 
@@ -494,9 +504,7 @@
 
     async function loadData() {
       const cached = readCache();
-
       if (cached) {
-        // Pintamos de inmediato con lo que ya teníamos guardado (sensación instantánea)
         allData = cached.data;
         buildTableHeaders();
         buildSlicers();
@@ -504,17 +512,13 @@
         applyFilters();
         renderLastUpdate(cached.ts);
 
-        const isFresh = (Date.now() - cached.ts) < CACHE_TTL_MS;
-        if (!isFresh) {
-          // La caché venció (más de 12h): refrescamos en segundo plano sin bloquear la vista.
+        if ((Date.now() - cached.ts) >= CACHE_TTL_MS) {
           refreshInBackground(false);
         }
-        // Si sigue fresca, NO pedimos datos al servidor: evita llamadas innecesarias en cada visita.
         return;
       }
 
-      document.getElementById('table-body').innerHTML =
-        `<tr><td colspan="${COLUMNS.length}">Cargando datos...</td></tr>`;
+      document.getElementById('table-body').innerHTML = `<tr><td colspan="${COLUMNS.length}">Cargando datos...</td></tr>`;
       await refreshInBackground(true);
     }
 
@@ -530,29 +534,15 @@
         applyFilters();
       } catch (err) {
         if (isFirstLoad) {
-          document.getElementById('table-body').innerHTML =
-            `<tr><td colspan="${COLUMNS.length}">Error al cargar datos.</td></tr>`;
+          document.getElementById('table-body').innerHTML = `<tr><td colspan="${COLUMNS.length}">Error al cargar datos.</td></tr>`;
         }
-        // Si ya había datos en caché mostrados, los dejamos así aunque falle el refresco.
       }
-    }
-
-    // Botón manual "Actualizar datos": fuerza ir al servidor sin importar el TTL.
-    async function manualRefresh() {
-      const btn = document.getElementById('btn-refresh');
-      btn.disabled = true;
-      const original = btn.innerText;
-      btn.innerText = 'Actualizando...';
-      await refreshInBackground(false);
-      btn.disabled = false;
-      btn.innerText = original;
     }
 
     function buildTableHeaders() {
       document.getElementById('table-headers').innerHTML = COLUMNS.map(c => `<th>${c.label}</th>`).join('');
     }
 
-    // -------------------- Slicers superiores --------------------
     function buildSlicers() {
       Object.keys(SLICER_FIELD_TO_ELEMENT).forEach(field => createSlicerButtons(field, SLICER_FIELD_TO_ELEMENT[field]));
     }
@@ -562,9 +552,7 @@
       let uniqueValues = [...new Set(allData.map(item => item[field]).filter(Boolean))];
       uniqueValues = ordenarValores(field, uniqueValues);
 
-      // current es null (= "Todos") o un Set con los valores elegidos
       const current = selectedFilters[field];
-
       const frag = document.createDocumentFragment();
       const btnTodos = document.createElement('button');
       btnTodos.className = 'btn-slicer' + (current === null ? ' active' : '');
@@ -586,26 +574,20 @@
       container.appendChild(frag);
     }
 
-    // Clic sobre un valor del segmentador.
-    // Modo normal (multiSelectMode = false): el clic reemplaza la selección (comportamiento clásico).
-    // Modo múltiple (multiSelectMode = true): el clic agrega/quita ese valor del conjunto seleccionado.
     function toggleSlicerValue(field, value) {
       const isMulti = multiSelectMode[field];
       const current = selectedFilters[field];
 
       if (!isMulti) {
         if (current instanceof Set && current.size === 1 && current.has(value)) {
-          selectedFilters[field] = null; // clic de nuevo sobre el mismo valor = quitar filtro
+          selectedFilters[field] = null;
         } else {
           selectedFilters[field] = new Set([value]);
         }
       } else {
         const newSet = current ? new Set(current) : new Set();
-        if (newSet.has(value)) {
-          newSet.delete(value);
-        } else {
-          newSet.add(value);
-        }
+        if (newSet.has(value)) newSet.delete(value);
+        else newSet.add(value);
         selectedFilters[field] = newSet.size > 0 ? newSet : null;
       }
 
@@ -619,13 +601,11 @@
       applyFilters();
     }
 
-    // Icono 🗹 en la esquina superior derecha de cada segmentador: activa/desactiva selección múltiple.
     function toggleMultiSelectMode(field, iconEl) {
       multiSelectMode[field] = !multiSelectMode[field];
       iconEl.classList.toggle('icon-active', multiSelectMode[field]);
     }
 
-    // -------------------- Filtros de columna (estilo Excel) --------------------
     function buildColumnFilters() {
       const filterRow = document.getElementById('filter-row');
       filterRow.innerHTML = COLUMNS.map((col, idx) => `
@@ -653,7 +633,7 @@
       const col = COLUMNS[idx];
       const panel = document.getElementById('panel-' + idx);
       const allValues = ordenarValores(col.key, [...new Set(allData.map(row => String(getVal(row, col))).filter(v => v !== ''))]);
-      const current = columnFilters[col.key]; // Set o null (null = todos marcados)
+      const current = columnFilters[col.key];
 
       panel.innerHTML = `
         <div class="filter-sort-row">
@@ -698,7 +678,7 @@
       const checked = checkboxes.filter(cb => cb.checked).map(cb => cb.value);
 
       if (checked.length === checkboxes.length) {
-        columnFilters[col.key] = null; // todo seleccionado = sin filtro
+        columnFilters[col.key] = null;
       } else {
         columnFilters[col.key] = new Set(checked);
       }
@@ -718,7 +698,6 @@
       }
     });
 
-    // -------------------- Ordenamiento de la tabla --------------------
     function sortByColumn(idx, direction) {
       sortState = { key: COLUMNS[idx].key, direction };
       closePanel(idx);
@@ -730,7 +709,6 @@
       applyFilters();
     }
 
-    // -------------------- Limpiar todo --------------------
     function clearAll() {
       COLUMNS.forEach(c => columnFilters[c.key] = null);
       sortState = { key: null, direction: null };
@@ -738,35 +716,38 @@
       applyFilters();
     }
 
-    // -------------------- Filtrado + render --------------------
-    let currentFiltered = []; // usado también por el botón de exportar a Excel
+    let currentFiltered = [];
 
     function passesSlicer(field, rowValue) {
       const sel = selectedFilters[field];
-      if (!sel) return true; // null = "Todos"
+      if (!sel) return true;
       return sel.has(rowValue);
     }
 
     function applyFilters() {
+      currentRenderLimit = PAGE_SIZE; // Resetear límite al filtrar
+
       let filtered = allData.filter(row => {
-        const passSlicers =
-          passesSlicer('Genero', row.Genero) &&
-          passesSlicer('Categoría', row.Categoría) &&
-          passesSlicer('LIGA', row.LIGA) &&
-          passesSlicer('PRUEBA', row.PRUEBA);
+        if (!passesSlicer('Genero', row.Genero) ||
+            !passesSlicer('Categoría', row.Categoría) ||
+            !passesSlicer('LIGA', row.LIGA) ||
+            !passesSlicer('PRUEBA', row.PRUEBA)) {
+          return false;
+        }
 
-        if (!passSlicers) return false;
-
-        return COLUMNS.every(col => {
-          const filterSet = columnFilters[col.key];
-          if (!filterSet) return true;
-          return filterSet.has(String(getVal(row, col)));
-        });
+        for (let i = 0; i < COLUMNS.length; i++) {
+          const colKey = COLUMNS[i].key;
+          const filterSet = columnFilters[colKey];
+          if (filterSet && !filterSet.has(String(getVal(row, COLUMNS[i])))) {
+            return false;
+          }
+        }
+        return true;
       });
 
       if (sortState.key) {
         const col = COLUMNS.find(c => c.key === sortState.key);
-        filtered = filtered.slice().sort((a, b) => {
+        filtered.sort((a, b) => {
           const cmp = String(getVal(a, col)).localeCompare(String(getVal(b, col)), 'es', { numeric: true });
           return sortState.direction === 'desc' ? -cmp : cmp;
         });
@@ -783,16 +764,20 @@
 
     function renderTable(data) {
       const tbody = document.getElementById('table-body');
+      const loadMoreBox = document.getElementById('load-more-box');
       document.getElementById('row-counter').innerText = `${data.length} resultado${data.length === 1 ? '' : 's'}`;
 
       if (data.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${COLUMNS.length}">No se encontraron resultados.</td></tr>`;
+        loadMoreBox.style.display = 'none';
         return;
       }
 
-      // Construcción vía DocumentFragment: más rápido que reconstruir todo el innerHTML en tablas grandes
+      // Renderizado recortado a 'currentRenderLimit' para evitar latencia táctil
+      const slice = data.slice(0, currentRenderLimit);
       const frag = document.createDocumentFragment();
-      data.forEach(row => {
+
+      slice.forEach(row => {
         const tr = document.createElement('tr');
         COLUMNS.forEach(col => {
           const td = document.createElement('td');
@@ -811,9 +796,19 @@
 
       tbody.innerHTML = '';
       tbody.appendChild(frag);
+
+      if (data.length > currentRenderLimit) {
+        loadMoreBox.style.display = 'block';
+      } else {
+        loadMoreBox.style.display = 'none';
+      }
     }
 
-    // -------------------- Exportar a Excel --------------------
+    function renderMoreRows() {
+      currentRenderLimit += PAGE_SIZE;
+      renderTable(currentFiltered);
+    }
+
     function exportToExcel() {
       if (!currentFiltered.length) {
         alert('No hay datos para exportar con los filtros actuales.');
@@ -825,24 +820,25 @@
       const originalText = btn.innerText;
       btn.innerText = 'Generando...';
 
-      try {
-        // Exporta exactamente lo que se ve en pantalla (con filtros y orden aplicados)
-        const rows = currentFiltered.map(row => {
-          const obj = {};
-          COLUMNS.forEach(col => { obj[col.label] = getVal(row, col); });
-          return obj;
-        });
+      setTimeout(() => {
+        try {
+          const rows = currentFiltered.map(row => {
+            const obj = {};
+            COLUMNS.forEach(col => { obj[col.label] = getVal(row, col); });
+            return obj;
+          });
 
-        const ws = XLSX.utils.json_to_sheet(rows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Ranking');
+          const ws = XLSX.utils.json_to_sheet(rows);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, 'Ranking');
 
-        const fecha = new Date().toISOString().slice(0, 10);
-        XLSX.writeFile(wb, `ranking_natacion_${fecha}.xlsx`);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = originalText;
-      }
+          const fecha = new Date().toISOString().slice(0, 10);
+          XLSX.writeFile(wb, `ranking_natacion_${fecha}.xlsx`);
+        } finally {
+          btn.disabled = false;
+          btn.innerText = originalText;
+        }
+      }, 50);
     }
 
     loadData();
