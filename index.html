@@ -56,11 +56,43 @@
 
     .slicer-title {
       background-color: #e9eef4;
-      padding: 6px 10px;
+      padding: 6px 8px 6px 10px;
       font-weight: bold;
       font-size: 13px;
       border-bottom: 1px solid var(--excel-border);
       color: #1f4e79;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .slicer-icons {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid var(--excel-border);
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1;
+      padding: 0;
+      color: #1f4e79;
+    }
+    .icon-btn:hover { background-color: #dde6f2; }
+    .icon-btn.icon-active {
+      background-color: var(--excel-btn-active);
+      color: #fff;
+      border-color: #1f4e79;
     }
 
     .slicer-buttons {
@@ -107,11 +139,16 @@
       margin-bottom: 6px;
       font-size: 12px;
       color: #555;
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
-    .toolbar-right { display: flex; gap: 8px; align-items: center; }
+    .toolbar-left { display: flex; flex-direction: column; gap: 2px; }
+    .toolbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-    .btn-clear-filters, .btn-export-excel {
+    #last-update { font-size: 11px; color: #888; }
+
+    .btn-clear-filters, .btn-export-excel, .btn-refresh {
       background-color: #eef1f6;
       border: 1px solid var(--excel-border);
       color: #1f4e79;
@@ -120,7 +157,8 @@
       border-radius: 2px;
       cursor: pointer;
     }
-    .btn-clear-filters:hover, .btn-export-excel:hover { background-color: #dde6f2; }
+    .btn-clear-filters:hover, .btn-export-excel:hover, .btn-refresh:hover { background-color: #dde6f2; }
+    .btn-refresh:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .btn-export-excel {
       background-color: #217346; /* verde estilo Excel */
@@ -270,12 +308,6 @@
 
     tr:nth-child(even) { background-color: #f9fbfd; }
     tr:hover { background-color: #edf2f8; }
-
-    .stale-badge {
-      font-size: 10px;
-      color: #b06a00;
-      margin-left: 6px;
-    }
   </style>
 </head>
 <body>
@@ -288,27 +320,55 @@
     <!-- Segmentadores (Slicers) -->
     <div class="slicers-container">
       <div class="slicer-group">
-        <div class="slicer-title">Género</div>
+        <div class="slicer-title">
+          <span>Género</span>
+          <span class="slicer-icons">
+            <button type="button" class="icon-btn" id="multi-Genero" title="Selección múltiple" onclick="toggleMultiSelectMode('Genero', this)">🗹</button>
+            <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearSlicer('Genero')">🚫</button>
+          </span>
+        </div>
         <div class="slicer-buttons" id="slicer-genero"></div>
       </div>
       <div class="slicer-group">
-        <div class="slicer-title">Categoría</div>
+        <div class="slicer-title">
+          <span>Categoría</span>
+          <span class="slicer-icons">
+            <button type="button" class="icon-btn" id="multi-Categoría" title="Selección múltiple" onclick="toggleMultiSelectMode('Categoría', this)">🗹</button>
+            <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearSlicer('Categoría')">🚫</button>
+          </span>
+        </div>
         <div class="slicer-buttons" id="slicer-categoria"></div>
       </div>
       <div class="slicer-group">
-        <div class="slicer-title">Liga</div>
+        <div class="slicer-title">
+          <span>Liga</span>
+          <span class="slicer-icons">
+            <button type="button" class="icon-btn" id="multi-LIGA" title="Selección múltiple" onclick="toggleMultiSelectMode('LIGA', this)">🗹</button>
+            <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearSlicer('LIGA')">🚫</button>
+          </span>
+        </div>
         <div class="slicer-buttons" id="slicer-liga"></div>
       </div>
       <div class="slicer-group">
-        <div class="slicer-title">Prueba</div>
+        <div class="slicer-title">
+          <span>Prueba</span>
+          <span class="slicer-icons">
+            <button type="button" class="icon-btn" id="multi-PRUEBA" title="Selección múltiple" onclick="toggleMultiSelectMode('PRUEBA', this)">🗹</button>
+            <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearSlicer('PRUEBA')">🚫</button>
+          </span>
+        </div>
         <div class="slicer-buttons" id="slicer-prueba"></div>
       </div>
     </div>
 
     <div class="table-toolbar">
-      <span id="row-counter"></span>
+      <div class="toolbar-left">
+        <span id="row-counter"></span>
+        <span id="last-update"></span>
+      </div>
       <div class="toolbar-right">
         <span id="sort-indicator"></span>
+        <button class="btn-refresh" id="btn-refresh" onclick="manualRefresh()">🔄 Actualizar datos</button>
         <button class="btn-export-excel" id="btn-export" onclick="exportToExcel()">⬇ Descargar Excel</button>
         <button class="btn-clear-filters" onclick="clearAll()">Limpiar filtros de columna</button>
       </div>
@@ -332,9 +392,12 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzo0LhRkLz2nU3ydkGWEy-I6B0hYOvpVfUivhjqIZVdrQ_XBLA3X4QFC-hMs021fW0/exec";
 
     // ---- Caché local (stale-while-revalidate) ----
-    // Muestra datos guardados instantáneamente mientras trae datos frescos en segundo plano.
+    // Los datos en el origen solo se actualizan 1 vez al día (2am vía trigger de Apps Script),
+    // así que NO tiene sentido pedirle datos frescos al servidor en cada visita.
+    // Guardamos en sessionStorage (se borra solo al cerrar la pestaña/navegador) y solo
+    // volvemos a pedir datos si la caché venció (CACHE_TTL_MS) o si el usuario lo pide manualmente.
     const CACHE_KEY = 'ranking_natacion_cache_v1';
-    const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos: tras este tiempo se refresca igual, aunque se muestre lo cacheado primero
+    const CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12 horas: suficiente para cubrir la actualización diaria de las 2am
 
     // Deben coincidir con las llaves de CANONICAL_COLUMNS en el Apps Script.
     const COLUMNS = [
@@ -354,8 +417,20 @@
 
     let allData = [];
 
-    // Filtros de los slicers de arriba (valor único seleccionado, o null = todos)
+    // Filtros de los segmentadores de arriba.
+    // Cada valor es: null (= "Todos", sin filtro) o un Set con los valores seleccionados (multi-selección).
     let selectedFilters = { Genero: null, Categoría: null, LIGA: null, PRUEBA: null };
+
+    // Modo de selección múltiple por segmentador (se activa con el icono 🗹).
+    // false = clic reemplaza la selección (como antes). true = clic acumula/quita valores.
+    let multiSelectMode = { Genero: false, Categoría: false, LIGA: false, PRUEBA: false };
+
+    const SLICER_FIELD_TO_ELEMENT = {
+      Genero: 'slicer-genero',
+      'Categoría': 'slicer-categoria',
+      LIGA: 'slicer-liga',
+      PRUEBA: 'slicer-prueba'
+    };
 
     // Filtros de columna (estilo Excel): Set de valores permitidos, o null = todos permitidos
     let columnFilters = {};
@@ -401,9 +476,20 @@
     }
 
     function writeCache(data) {
+      const ts = Date.now();
       try {
-        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts }));
       } catch (e) { /* si sessionStorage falla, seguimos sin caché */ }
+      renderLastUpdate(ts);
+    }
+
+    function renderLastUpdate(ts) {
+      const el = document.getElementById('last-update');
+      if (!el) return;
+      const fecha = new Date(ts);
+      el.innerText = 'Datos cargados: ' + fecha.toLocaleString('es-CO', {
+        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
     }
 
     async function loadData() {
@@ -416,20 +502,20 @@
         buildSlicers();
         buildColumnFilters();
         applyFilters();
+        renderLastUpdate(cached.ts);
 
         const isFresh = (Date.now() - cached.ts) < CACHE_TTL_MS;
-        if (isFresh) {
-          // Aún vigente: no hace falta ir a buscar datos nuevos ahora mismo,
-          // pero igual refrescamos en segundo plano sin bloquear la UI.
-          refreshInBackground();
-          return;
+        if (!isFresh) {
+          // La caché venció (más de 12h): refrescamos en segundo plano sin bloquear la vista.
+          refreshInBackground(false);
         }
-      } else {
-        document.getElementById('table-body').innerHTML =
-          `<tr><td colspan="${COLUMNS.length}">Cargando datos...</td></tr>`;
+        // Si sigue fresca, NO pedimos datos al servidor: evita llamadas innecesarias en cada visita.
+        return;
       }
 
-      await refreshInBackground(!cached);
+      document.getElementById('table-body').innerHTML =
+        `<tr><td colspan="${COLUMNS.length}">Cargando datos...</td></tr>`;
+      await refreshInBackground(true);
     }
 
     async function refreshInBackground(isFirstLoad) {
@@ -451,16 +537,24 @@
       }
     }
 
+    // Botón manual "Actualizar datos": fuerza ir al servidor sin importar el TTL.
+    async function manualRefresh() {
+      const btn = document.getElementById('btn-refresh');
+      btn.disabled = true;
+      const original = btn.innerText;
+      btn.innerText = 'Actualizando...';
+      await refreshInBackground(false);
+      btn.disabled = false;
+      btn.innerText = original;
+    }
+
     function buildTableHeaders() {
       document.getElementById('table-headers').innerHTML = COLUMNS.map(c => `<th>${c.label}</th>`).join('');
     }
 
     // -------------------- Slicers superiores --------------------
     function buildSlicers() {
-      createSlicerButtons('Genero', 'slicer-genero');
-      createSlicerButtons('Categoría', 'slicer-categoria');
-      createSlicerButtons('LIGA', 'slicer-liga');
-      createSlicerButtons('PRUEBA', 'slicer-prueba');
+      Object.keys(SLICER_FIELD_TO_ELEMENT).forEach(field => createSlicerButtons(field, SLICER_FIELD_TO_ELEMENT[field]));
     }
 
     function createSlicerButtons(field, elementId) {
@@ -468,21 +562,23 @@
       let uniqueValues = [...new Set(allData.map(item => item[field]).filter(Boolean))];
       uniqueValues = ordenarValores(field, uniqueValues);
 
-      // Conserva la selección activa si ya existía (por ejemplo, tras un refresco en segundo plano)
-      const currentSelection = selectedFilters[field];
+      // current es null (= "Todos") o un Set con los valores elegidos
+      const current = selectedFilters[field];
 
       const frag = document.createDocumentFragment();
       const btnTodos = document.createElement('button');
-      btnTodos.className = 'btn-slicer' + (currentSelection === null ? ' active' : '');
+      btnTodos.className = 'btn-slicer' + (current === null ? ' active' : '');
       btnTodos.innerText = 'Todos';
-      btnTodos.onclick = () => setFilter(field, null, btnTodos);
+      btnTodos.onclick = () => clearSlicer(field);
       frag.appendChild(btnTodos);
 
       uniqueValues.forEach(val => {
+        const isActive = current !== null && current.has(val);
         const btn = document.createElement('button');
-        btn.className = 'btn-slicer' + (currentSelection === val ? ' active' : '');
+        btn.className = 'btn-slicer' + (isActive ? ' active' : '');
         btn.innerText = val;
-        btn.onclick = () => setFilter(field, val, btn);
+        btn.title = val;
+        btn.onclick = () => toggleSlicerValue(field, val);
         frag.appendChild(btn);
       });
 
@@ -490,12 +586,43 @@
       container.appendChild(frag);
     }
 
-    function setFilter(field, value, btnElement) {
-      selectedFilters[field] = value;
-      const parent = btnElement.parentElement;
-      parent.querySelectorAll('.btn-slicer').forEach(b => b.classList.remove('active'));
-      btnElement.classList.add('active');
+    // Clic sobre un valor del segmentador.
+    // Modo normal (multiSelectMode = false): el clic reemplaza la selección (comportamiento clásico).
+    // Modo múltiple (multiSelectMode = true): el clic agrega/quita ese valor del conjunto seleccionado.
+    function toggleSlicerValue(field, value) {
+      const isMulti = multiSelectMode[field];
+      const current = selectedFilters[field];
+
+      if (!isMulti) {
+        if (current instanceof Set && current.size === 1 && current.has(value)) {
+          selectedFilters[field] = null; // clic de nuevo sobre el mismo valor = quitar filtro
+        } else {
+          selectedFilters[field] = new Set([value]);
+        }
+      } else {
+        const newSet = current ? new Set(current) : new Set();
+        if (newSet.has(value)) {
+          newSet.delete(value);
+        } else {
+          newSet.add(value);
+        }
+        selectedFilters[field] = newSet.size > 0 ? newSet : null;
+      }
+
+      createSlicerButtons(field, SLICER_FIELD_TO_ELEMENT[field]);
       applyFilters();
+    }
+
+    function clearSlicer(field) {
+      selectedFilters[field] = null;
+      createSlicerButtons(field, SLICER_FIELD_TO_ELEMENT[field]);
+      applyFilters();
+    }
+
+    // Icono 🗹 en la esquina superior derecha de cada segmentador: activa/desactiva selección múltiple.
+    function toggleMultiSelectMode(field, iconEl) {
+      multiSelectMode[field] = !multiSelectMode[field];
+      iconEl.classList.toggle('icon-active', multiSelectMode[field]);
     }
 
     // -------------------- Filtros de columna (estilo Excel) --------------------
@@ -614,13 +741,19 @@
     // -------------------- Filtrado + render --------------------
     let currentFiltered = []; // usado también por el botón de exportar a Excel
 
+    function passesSlicer(field, rowValue) {
+      const sel = selectedFilters[field];
+      if (!sel) return true; // null = "Todos"
+      return sel.has(rowValue);
+    }
+
     function applyFilters() {
       let filtered = allData.filter(row => {
         const passSlicers =
-          (!selectedFilters.Genero || row.Genero === selectedFilters.Genero) &&
-          (!selectedFilters.Categoría || row.Categoría === selectedFilters.Categoría) &&
-          (!selectedFilters.LIGA || row.LIGA === selectedFilters.LIGA) &&
-          (!selectedFilters.PRUEBA || row.PRUEBA === selectedFilters.PRUEBA);
+          passesSlicer('Genero', row.Genero) &&
+          passesSlicer('Categoría', row.Categoría) &&
+          passesSlicer('LIGA', row.LIGA) &&
+          passesSlicer('PRUEBA', row.PRUEBA);
 
         if (!passSlicers) return false;
 
