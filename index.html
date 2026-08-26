@@ -31,9 +31,7 @@
       width: 100%;
     }
 
-    .page-container {
-      padding: 15px;
-    }
+    .page-container { padding: 15px; }
 
     .slicers-container {
       display: grid;
@@ -66,11 +64,7 @@
       gap: 6px;
     }
 
-    .slicer-icons {
-      display: flex;
-      gap: 4px;
-      flex-shrink: 0;
-    }
+    .slicer-icons { display: flex; gap: 4px; flex-shrink: 0; }
 
     .icon-btn {
       width: 24px;
@@ -167,7 +161,6 @@
       gap: 4px;
     }
     .btn-export-excel:hover { background-color: #1a5c38; }
-    .btn-export-excel:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .table-container {
       overflow-x: auto;
@@ -178,11 +171,7 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
 
     th {
       background-color: var(--excel-header-bg);
@@ -271,11 +260,7 @@
       margin-bottom: 4px;
     }
 
-    .filter-check-list {
-      max-height: 180px;
-      overflow-y: auto;
-      margin-bottom: 8px;
-    }
+    .filter-check-list { max-height: 180px; overflow-y: auto; margin-bottom: 8px; }
 
     .filter-check-item {
       display: block;
@@ -316,16 +301,10 @@
       cursor: pointer;
     }
 
-    td {
-      padding: 6px 8px;
-      border: 1px solid #e0e0e0;
-      white-space: nowrap;
-    }
-
+    td { padding: 6px 8px; border: 1px solid #e0e0e0; white-space: nowrap; }
     tr:nth-child(even) { background-color: #f9fbfd; }
     tr:hover { background-color: #edf2f8; }
 
-    /* Ajustes específicos para Móviles */
     @media (max-width: 600px) {
       .page-container { padding: 8px; }
       .slicers-container { grid-template-columns: 1fr; gap: 8px; padding: 8px; }
@@ -343,7 +322,6 @@
   <div class="page-container">
     <h2>Dashboard de Ranking y Resultados</h2>
 
-    <!-- Segmentadores (Slicers) -->
     <div class="slicers-container">
       <div class="slicer-group">
         <div class="slicer-title">
@@ -399,7 +377,6 @@
       </div>
     </div>
 
-    <!-- Tabla de Datos -->
     <div class="table-container">
       <table id="ranking-table">
         <thead>
@@ -421,7 +398,6 @@
     const CACHE_KEY = 'ranking_natacion_cache_v1';
     const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
     
-    // Control de límite de filas para acelerar renderizado móvil
     const PAGE_SIZE = 100;
     let currentRenderLimit = PAGE_SIZE;
 
@@ -454,6 +430,7 @@
     let columnFilters = {};
     COLUMNS.forEach(c => columnFilters[c.key] = null);
     let sortState = { key: null, direction: null };
+    let currentFiltered = [];
 
     function getVal(row, col) { return row[col.key] ?? ''; }
 
@@ -716,8 +693,6 @@
       applyFilters();
     }
 
-    let currentFiltered = [];
-
     function passesSlicer(field, rowValue) {
       const sel = selectedFilters[field];
       if (!sel) return true;
@@ -725,7 +700,7 @@
     }
 
     function applyFilters() {
-      currentRenderLimit = PAGE_SIZE; // Resetear límite al filtrar
+      currentRenderLimit = PAGE_SIZE;
 
       let filtered = allData.filter(row => {
         if (!passesSlicer('Genero', row.Genero) ||
@@ -773,7 +748,6 @@
         return;
       }
 
-      // Renderizado recortado a 'currentRenderLimit' para evitar latencia táctil
       const slice = data.slice(0, currentRenderLimit);
       const frag = document.createDocumentFragment();
 
@@ -810,38 +784,27 @@
     }
 
     function exportToExcel() {
-      if (!currentFiltered.length) {
-        alert('No hay datos para exportar con los filtros actuales.');
+      if (!currentFiltered || currentFiltered.length === 0) {
+        alert("No hay datos para exportar.");
         return;
       }
 
-      const btn = document.getElementById('btn-export');
-      btn.disabled = true;
-      const originalText = btn.innerText;
-      btn.innerText = 'Generando...';
+      const dataToExport = currentFiltered.map(row => {
+        let exportObj = {};
+        COLUMNS.forEach(col => {
+          exportObj[col.label] = getVal(row, col);
+        });
+        return exportObj;
+      });
 
-      setTimeout(() => {
-        try {
-          const rows = currentFiltered.map(row => {
-            const obj = {};
-            COLUMNS.forEach(col => { obj[col.label] = getVal(row, col); });
-            return obj;
-          });
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Ranking");
 
-          const ws = XLSX.utils.json_to_sheet(rows);
-          const wb = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(wb, ws, 'Ranking');
-
-          const fecha = new Date().toISOString().slice(0, 10);
-          XLSX.writeFile(wb, `ranking_natacion_${fecha}.xlsx`);
-        } finally {
-          btn.disabled = false;
-          btn.innerText = originalText;
-        }
-      }, 50);
+      XLSX.writeFile(workbook, "Ranking_Natacion_Filtrado.xlsx");
     }
 
-    loadData();
+    window.onload = loadData;
   </script>
 </body>
 </html>
