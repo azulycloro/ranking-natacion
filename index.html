@@ -44,11 +44,26 @@
       border-radius: 4px;
     }
 
+    /* Columna contenedora para Género y Posición */
+    .slicer-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+    }
+
     .slicer-group {
       border: 1px solid var(--excel-border);
       border-radius: 4px;
       background: #fafafa;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Ajuste para reducir el tamaño a la mitad */
+    .slicer-group.half-size {
+      flex: 1;
     }
 
     .slicer-title {
@@ -95,6 +110,19 @@
       max-height: 140px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      flex: 1;
+    }
+
+    /* Reducción de área de botones para la vista de media altura */
+    .slicer-group.half-size .slicer-buttons {
+      max-height: 60px;
+      padding: 6px;
+    }
+
+    .slicer-group.half-size .btn-slicer {
+      padding: 4px 6px;
+      font-size: 10.5px;
+      min-width: 50px;
     }
 
     .slicer-buttons::-webkit-scrollbar { width: 6px; }
@@ -309,6 +337,7 @@
       .page-container { padding: 8px; }
       .slicers-container { grid-template-columns: 1fr; gap: 8px; padding: 8px; }
       .slicer-buttons { max-height: 110px; }
+      .slicer-group.half-size .slicer-buttons { max-height: 80px; }
       .table-toolbar { flex-direction: column; align-items: flex-start; }
       .toolbar-right { width: 100%; justify-content: space-between; }
       .filter-panel { position: fixed; left: 5%; right: 5%; top: 20%; width: 90%; }
@@ -323,16 +352,32 @@
     <h2>Ranking Nacional 2026.</h2>
 
     <div class="slicers-container">
-      <div class="slicer-group">
-        <div class="slicer-title">
-          <span>Género</span>
-          <span class="slicer-icons">
-            <button type="button" class="icon-btn" id="multi-Genero" title="Selección múltiple" onclick="toggleMultiSelectMode('Genero', this)">🗹</button>
-            <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearSlicer('Genero')">🚫</button>
-          </span>
+      
+      <!-- Columna combinada: Género (Arriba) y Posición (Abajo) -->
+      <div class="slicer-column">
+        <div class="slicer-group half-size">
+          <div class="slicer-title">
+            <span>Género</span>
+            <span class="slicer-icons">
+              <button type="button" class="icon-btn" id="multi-Genero" title="Selección múltiple" onclick="toggleMultiSelectMode('Genero', this)">🗹</button>
+              <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearSlicer('Genero')">🚫</button>
+            </span>
+          </div>
+          <div class="slicer-buttons" id="slicer-genero"></div>
         </div>
-        <div class="slicer-buttons" id="slicer-genero"></div>
+
+        <div class="slicer-group half-size">
+          <div class="slicer-title">
+            <span>Posición</span>
+            <span class="slicer-icons">
+              <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearPosicion()">🚫</button>
+            </span>
+          </div>
+          <div class="slicer-buttons" id="slicer-posicion"></div>
+        </div>
       </div>
+
+      <!-- Segmentador Categoría -->
       <div class="slicer-group">
         <div class="slicer-title">
           <span>Categoría</span>
@@ -343,6 +388,8 @@
         </div>
         <div class="slicer-buttons" id="slicer-categoria"></div>
       </div>
+
+      <!-- Segmentador Liga -->
       <div class="slicer-group">
         <div class="slicer-title">
           <span>Liga</span>
@@ -353,6 +400,8 @@
         </div>
         <div class="slicer-buttons" id="slicer-liga"></div>
       </div>
+
+      <!-- Segmentador Prueba -->
       <div class="slicer-group">
         <div class="slicer-title">
           <span>Prueba</span>
@@ -363,6 +412,7 @@
         </div>
         <div class="slicer-buttons" id="slicer-prueba"></div>
       </div>
+
     </div>
 
     <div class="table-toolbar">
@@ -419,6 +469,7 @@
     let allData = [];
     let selectedFilters = { Genero: null, Categoría: null, LIGA: null, PRUEBA: null };
     let multiSelectMode = { Genero: false, Categoría: false, LIGA: false, PRUEBA: false };
+    let selectedPosicion = 'Todos';
 
     const SLICER_FIELD_TO_ELEMENT = {
       Genero: 'slicer-genero',
@@ -485,6 +536,7 @@
         allData = cached.data;
         buildTableHeaders();
         buildSlicers();
+        buildPosicionSlicer();
         buildColumnFilters();
         applyFilters();
         renderLastUpdate(cached.ts);
@@ -507,6 +559,7 @@
         writeCache(freshData);
         buildTableHeaders();
         buildSlicers();
+        buildPosicionSlicer();
         buildColumnFilters();
         applyFilters();
       } catch (err) {
@@ -526,6 +579,7 @@
 
     function createSlicerButtons(field, elementId) {
       const container = document.getElementById(elementId);
+      if (!container) return;
       let uniqueValues = [...new Set(allData.map(item => item[field]).filter(Boolean))];
       uniqueValues = ordenarValores(field, uniqueValues);
 
@@ -549,6 +603,35 @@
 
       container.innerHTML = '';
       container.appendChild(frag);
+    }
+
+    function buildPosicionSlicer() {
+      const container = document.getElementById('slicer-posicion');
+      if (!container) return;
+      const ranges = ['Todos', '1 al 3', '1 al 8', '1 al 16', '1 al 24', '1 al 32'];
+      const frag = document.createDocumentFragment();
+
+      ranges.forEach(range => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-slicer' + (selectedPosicion === range ? ' active' : '');
+        btn.innerText = range;
+        btn.title = range;
+        btn.onclick = () => {
+          selectedPosicion = range;
+          buildPosicionSlicer();
+          applyFilters();
+        };
+        frag.appendChild(btn);
+      });
+
+      container.innerHTML = '';
+      container.appendChild(frag);
+    }
+
+    function clearPosicion() {
+      selectedPosicion = 'Todos';
+      buildPosicionSlicer();
+      applyFilters();
     }
 
     function toggleSlicerValue(field, value) {
@@ -689,7 +772,9 @@
     function clearAll() {
       COLUMNS.forEach(c => columnFilters[c.key] = null);
       sortState = { key: null, direction: null };
+      selectedPosicion = 'Todos';
       buildColumnFilters();
+      buildPosicionSlicer();
       applyFilters();
     }
 
@@ -703,6 +788,18 @@
       currentRenderLimit = PAGE_SIZE;
 
       let filtered = allData.filter(row => {
+        // Filtrado numérico por Posición
+        if (selectedPosicion !== 'Todos') {
+          const rawPos = row['POSC.'];
+          const pos = parseInt(String(rawPos).replace(/\D/g, ''), 10);
+          if (isNaN(pos)) return false;
+          if (selectedPosicion === '1 al 3' && pos > 3) return false;
+          if (selectedPosicion === '1 al 8' && pos > 8) return false;
+          if (selectedPosicion === '1 al 16' && pos > 16) return false;
+          if (selectedPosicion === '1 al 24' && pos > 24) return false;
+          if (selectedPosicion === '1 al 32' && pos > 32) return false;
+        }
+
         if (!passesSlicer('Genero', row.Genero) ||
             !passesSlicer('Categoría', row.Categoría) ||
             !passesSlicer('LIGA', row.LIGA) ||
