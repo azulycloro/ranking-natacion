@@ -169,7 +169,7 @@
 
     #last-update { font-size: 11px; color: #777; }
 
-    .btn-clear-filters, .btn-export-excel {
+    .btn-clear-filters, .btn-export-excel, .btn-copy-clipboard {
       background-color: #eef1f6;
       border: 1px solid var(--excel-border);
       color: #1f4e79;
@@ -191,6 +191,17 @@
       gap: 4px;
     }
     .btn-export-excel:hover { background-color: #1a5c38; }
+
+    .btn-copy-clipboard {
+      background-color: #2f5597;
+      color: #fff;
+      border-color: #1f4e79;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-copy-clipboard:hover { background-color: #1f4e79; }
 
     .table-container {
       overflow-x: auto;
@@ -439,6 +450,7 @@
       <div class="toolbar-right">
         <span id="sort-indicator"></span>
         <button class="btn-export-excel" id="btn-export" onclick="exportToExcel()">⬇ Descargar Excel</button>
+        <button class="btn-copy-clipboard" id="btn-copy" onclick="copyTableToClipboard()">📋 Copiar para Hoja</button>
         <button class="btn-clear-filters" onclick="clearAll()">Limpiar filtros de columna</button>
       </div>
     </div>
@@ -927,6 +939,38 @@
       XLSX.utils.book_append_sheet(workbook, worksheet, "Ranking");
 
       XLSX.writeFile(workbook, "Ranking_Natacion_Filtrado.xlsx");
+    }
+
+    function copyTableToClipboard() {
+      if (!currentFiltered || currentFiltered.length === 0) {
+        alert("No hay datos para copiar.");
+        return;
+      }
+
+      const headers = COLUMNS.map(col => col.label);
+      let tsvContent = headers.join("\t") + "\n";
+
+      currentFiltered.forEach(row => {
+        const rowData = COLUMNS.map(col => {
+          const val = getVal(row, col);
+          return String(val).replace(/[\t\n\r]+/g, ' ').trim();
+        });
+        tsvContent += rowData.join("\t") + "\n";
+      });
+
+      navigator.clipboard.writeText(tsvContent).then(() => {
+        const btn = document.getElementById('btn-copy');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "✓ ¡Copiado!";
+        btn.style.backgroundColor = "#217346";
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.style.backgroundColor = "";
+        }, 2000);
+      }).catch(err => {
+        console.error('Error al copiar al portapapeles: ', err);
+        alert("No se pudo copiar al portapapeles. Verifica los permisos del navegador o el entorno seguro (HTTPS).");
+      });
     }
 
     window.onload = loadData;
