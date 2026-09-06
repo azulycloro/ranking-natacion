@@ -8,8 +8,8 @@
   <style>
     :root {
       --excel-header-bg: #1f4e79;
-      --excel-btn-bg: #b4c6e7;
-      --excel-btn-active: #2f5597;
+      --excel-btn-bg: #ffffff;
+      --excel-btn-active: #b4c6e7;
       --excel-border: #8ea9db;
     }
 
@@ -22,135 +22,159 @@
       color: #333;
     }
 
+    h2 {
+      margin: 4px 0 8px 0;
+      font-size: 20px;
+    }
+
     .top-bar {
       background-color: #e5e5e5;
       color: #666;
       text-align: center;
-      padding: 6px 0;
-      font-size: 13px;
+      padding: 3px 0;
+      font-size: 12px;
       width: 100%;
     }
 
-    .page-container { padding: 15px; }
-
-    .slicers-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
-      background: #ffffff;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+    .page-container { 
+      padding: 6px 12px 12px 12px; 
     }
 
-    /* Columna contenedora para Género y Posición */
-    .slicer-column {
+    /* Contenedor de Segmentadores */
+    .slicers-container {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
-      height: 100%;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 15px;
+      background: #ffffff;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      align-items: flex-start;
     }
 
     .slicer-group {
+      flex: 1 1 170px;
+      min-width: 150px;
       border: 1px solid var(--excel-border);
-      border-radius: 4px;
-      background: #fafafa;
-      overflow: hidden;
+      border-radius: 3px;
+      background: #fff;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      overflow: hidden;
     }
 
-    /* Género: Ajuste ajustado al contenido */
-    .slicer-group.fit-content {
-      flex: 0 0 auto;
-    }
-    .slicer-group.fit-content .slicer-buttons {
-      max-height: none;
-      padding: 6px;
-    }
-
-    /* Posición: Expande y muestra todo el contenido sin scrollbar */
-    .slicer-group.expand-content {
-      flex: 1 1 auto;
-    }
-    .slicer-group.expand-content .slicer-buttons {
-      max-height: none;
-      overflow-y: visible;
-      padding: 6px;
+    .slicer-group.wide-slicer {
+      flex: 2 1 340px;
+      min-width: 280px;
     }
 
     .slicer-title {
       background-color: #e9eef4;
-      padding: 6px 10px;
+      padding: 4px 8px;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 11px;
       border-bottom: 1px solid var(--excel-border);
       color: #1f4e79;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
 
-    .slicer-icons { display: flex; gap: 4px; flex-shrink: 0; }
+    .slicer-icons { display: flex; gap: 3px; flex-shrink: 0; }
 
     .icon-btn {
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #fff;
       border: 1px solid var(--excel-border);
-      border-radius: 3px;
+      border-radius: 2px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 10px;
       color: #1f4e79;
     }
     .icon-btn:hover { background-color: #dde6f2; }
     .icon-btn.icon-active {
-      background-color: var(--excel-btn-active);
+      background-color: #2f5597;
       color: #fff;
       border-color: #1f4e79;
     }
 
     .slicer-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      align-content: flex-start;
-      gap: 4px;
-      padding: 8px;
-      max-height: 140px;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      flex: 1;
+      padding: 4px;
     }
 
-    .slicer-buttons::-webkit-scrollbar { width: 6px; }
-    .slicer-buttons::-webkit-scrollbar-track { background: #f0f0f0; }
-    .slicer-buttons::-webkit-scrollbar-thumb { background-color: var(--excel-border); border-radius: 4px; }
+    /* Listas desplegables para móviles (ocultas en escritorio) */
+    .mobile-slicer-select {
+      display: none;
+      width: calc(100% - 8px);
+      margin: 4px;
+      padding: 5px 6px;
+      font-size: 11px;
+      border: 1px solid var(--excel-border);
+      border-radius: 3px;
+      background-color: #fff;
+      color: #333;
+      outline: none;
+    }
+
+    #slicer-liga {
+      max-height: 150px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #slicer-liga::-webkit-scrollbar { width: 5px; }
+    #slicer-liga::-webkit-scrollbar-track { background: #f0f0f0; }
+    #slicer-liga::-webkit-scrollbar-thumb { background-color: var(--excel-border); border-radius: 3px; }
+
+    .slicer-buttons.vertical {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .slicer-buttons.grid-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 3px;
+    }
 
     .btn-slicer {
       background-color: var(--excel-btn-bg);
-      border: 1px solid #8ea9db;
+      border: 1px solid #b0c4de;
       color: #000;
-      padding: 6px 10px;
-      font-size: 11px;
+      padding: 3px 6px;
+      font-size: 10px;
       cursor: pointer;
       border-radius: 2px;
-      flex: 1 1 auto;
-      min-width: 65px;
-      text-align: center;
+      text-align: left;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       transition: background-color 0.1s ease;
       touch-action: manipulation;
+      flex-shrink: 0;
+      min-height: 22px;
+      line-height: 1.2;
     }
 
-    .btn-slicer:hover { background-color: #8ea9db; }
+    .slicer-buttons.grid-buttons .btn-slicer {
+      text-align: center;
+    }
+
+    .btn-slicer:hover { background-color: #f2f5fc; border-color: #8ea9db; }
     .btn-slicer.active {
       background-color: var(--excel-btn-active);
-      color: #ffffff;
-      font-weight: bold;
+      color: #000;
+      font-weight: 600;
+      border-color: #5980be;
     }
 
     .table-toolbar {
@@ -158,7 +182,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 8px;
-      font-size: 12px;
+      font-size: 11px;
       color: #555;
       flex-wrap: wrap;
       gap: 8px;
@@ -167,13 +191,13 @@
     .toolbar-left { display: flex; flex-direction: column; gap: 2px; }
     .toolbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-    #last-update { font-size: 11px; color: #777; }
+    #last-update { font-size: 10px; color: #777; }
 
     .btn-clear-filters, .btn-export-excel, .btn-copy-clipboard {
       background-color: #eef1f6;
       border: 1px solid var(--excel-border);
       color: #1f4e79;
-      padding: 6px 12px;
+      padding: 5px 10px;
       font-size: 11px;
       border-radius: 2px;
       cursor: pointer;
@@ -212,12 +236,12 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
 
     th {
       background-color: var(--excel-header-bg);
       color: white;
-      padding: 8px;
+      padding: 7px 8px;
       text-align: left;
       font-weight: 600;
       border: 1px solid #103356;
@@ -229,13 +253,12 @@
 
     .filter-row th {
       background-color: #eef1f6;
-      padding: 4px;
+      padding: 3px;
       position: sticky;
-      top: 33px;
+      top: 31px;
       z-index: 9;
     }
 
-    /* Eleva la celda del filtro activo por encima de los encabezados de la tabla */
     .filter-row th.is-open {
       z-index: 1000 !important;
     }
@@ -250,14 +273,14 @@
       background-color: #fff;
       border: 1px solid var(--excel-border);
       color: #333;
-      font-size: 11px;
-      padding: 4px 6px;
+      font-size: 10px;
+      padding: 3px 5px;
       border-radius: 2px;
       cursor: pointer;
     }
     .btn-filter-toggle.filter-active {
       background-color: #dce8ff;
-      border-color: var(--excel-btn-active);
+      border-color: #2f5597;
       font-weight: bold;
       color: #1f4e79;
     }
@@ -268,7 +291,7 @@
       top: 100%;
       left: 0;
       z-index: 2000;
-      width: 240px;
+      width: 230px;
       background: #fff;
       border: 1px solid var(--excel-border);
       border-radius: 4px;
@@ -281,8 +304,8 @@
     .filter-sort-row { display: flex; gap: 4px; margin-bottom: 6px; }
     .filter-sort-row button {
       flex: 1;
-      font-size: 11px;
-      padding: 6px 2px;
+      font-size: 10px;
+      padding: 5px 2px;
       border: 1px solid var(--excel-border);
       background: #eef1f6;
       border-radius: 2px;
@@ -292,8 +315,8 @@
 
     .filter-search {
       width: 100%;
-      padding: 6px;
-      font-size: 12px;
+      padding: 5px;
+      font-size: 11px;
       border: 1px solid var(--excel-border);
       border-radius: 2px;
       margin-bottom: 6px;
@@ -302,61 +325,74 @@
     .filter-select-all {
       font-weight: bold;
       border-bottom: 1px solid #ddd;
-      padding-bottom: 6px;
+      padding-bottom: 4px;
       margin-bottom: 4px;
     }
 
-    .filter-check-list { max-height: 180px; overflow-y: auto; margin-bottom: 8px; }
+    .filter-check-list { max-height: 170px; overflow-y: auto; margin-bottom: 8px; }
 
     .filter-check-item {
       display: block;
-      font-size: 12px;
-      padding: 4px 2px;
+      font-size: 11px;
+      padding: 3px 2px;
       cursor: pointer;
       color: #333;
     }
-    .filter-check-item input { margin-right: 6px; transform: scale(1.1); }
+    .filter-check-item input { margin-right: 5px; transform: scale(1.0); }
 
     .filter-actions { display: flex; gap: 6px; }
     .filter-actions button {
       flex: 1;
-      font-size: 11px;
-      padding: 8px;
+      font-size: 10px;
+      padding: 6px;
       border-radius: 2px;
       cursor: pointer;
       border: 1px solid var(--excel-border);
     }
-    .btn-apply { background: var(--excel-btn-active); color: #fff; }
+    .btn-apply { background: #2f5597; color: #fff; }
     .btn-cancel { background: #eee; color: #333; }
 
     .load-more-container {
       text-align: center;
-      padding: 10px;
+      padding: 8px;
       background: #fff;
       border: 1px solid #ccc;
       border-top: none;
     }
 
     .btn-load-more {
-      background-color: var(--excel-btn-active);
+      background-color: #2f5597;
       color: #fff;
       border: none;
-      padding: 8px 16px;
-      font-size: 12px;
+      padding: 6px 14px;
+      font-size: 11px;
       border-radius: 3px;
       cursor: pointer;
     }
 
-    td { padding: 6px 8px; border: 1px solid #e0e0e0; white-space: nowrap; }
+    td { padding: 5px 7px; border: 1px solid #e0e0e0; white-space: nowrap; }
     tr:nth-child(even) { background-color: #f9fbfd; }
     tr:hover { background-color: #edf2f8; }
 
-    @media (max-width: 600px) {
-      .page-container { padding: 8px; }
-      .slicers-container { grid-template-columns: 1fr; gap: 8px; padding: 8px; }
-      .slicer-buttons { max-height: 110px; }
-      .slicer-group.fit-content .slicer-buttons,
-      .slicer-group.expand-content .slicer-buttons { max-height: none; }
+    /* Adaptación Exclusiva para Móviles (Celulares) */
+    @media (max-width: 768px) {
+      .page-container { padding: 6px; }
+      
+      .slicers-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        padding: 6px;
+      }
+
+      .slicer-group { width: 100%; flex: none; min-width: 0; }
+      .slicer-group.wide-slicer { grid-column: span 2; width: 100%; flex: none; }
+      
+      /* Oculta los botones en móvil y activa las listas desplegables */
+      .slicer-buttons { display: none !important; }
+      .mobile-slicer-select { display: block; }
+      .slicer-icons .icon-btn[id^="multi-"] { display: none; }
+
       .table-toolbar { flex-direction: column; align-items: flex-start; }
       .toolbar-right { width: 100%; justify-content: space-between; }
       .filter-panel {
@@ -378,33 +414,35 @@
   <div class="page-container">
     <h2>Ranking Nacional</h2>
 
+    <!-- Segmentadores Estilo Excel / Desplegables Móviles -->
     <div class="slicers-container">
       
-      <!-- Columna combinada: Género (Arriba) y Posición (Abajo) -->
-      <div class="slicer-column">
-        <div class="slicer-group fit-content">
-          <div class="slicer-title">
-            <span>Género</span>
-            <span class="slicer-icons">
-              <button type="button" class="icon-btn" id="multi-Genero" title="Selección múltiple" onclick="toggleMultiSelectMode('Genero', this)">🗹</button>
-              <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearSlicer('Genero')">🚫</button>
-            </span>
-          </div>
-          <div class="slicer-buttons" id="slicer-genero"></div>
+      <!-- Género -->
+      <div class="slicer-group">
+        <div class="slicer-title">
+          <span>Género</span>
+          <span class="slicer-icons">
+            <button type="button" class="icon-btn" id="multi-Genero" title="Selección múltiple" onclick="toggleMultiSelectMode('Genero', this)">🗹</button>
+            <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearSlicer('Genero')">🚫</button>
+          </span>
         </div>
-
-        <div class="slicer-group expand-content">
-          <div class="slicer-title">
-            <span>Posición</span>
-            <span class="slicer-icons">
-              <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearPosicion()">🚫</button>
-            </span>
-          </div>
-          <div class="slicer-buttons" id="slicer-posicion"></div>
-        </div>
+        <div class="slicer-buttons vertical" id="slicer-genero"></div>
+        <select class="mobile-slicer-select" id="select-genero" onchange="handleMobileSelectChange('Genero', this.value)"></select>
       </div>
 
-      <!-- Segmentador Categoría -->
+      <!-- Posición -->
+      <div class="slicer-group">
+        <div class="slicer-title">
+          <span>Posición</span>
+          <span class="slicer-icons">
+            <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearPosicion()">🚫</button>
+          </span>
+        </div>
+        <div class="slicer-buttons vertical" id="slicer-posicion"></div>
+        <select class="mobile-slicer-select" id="select-posicion" onchange="handleMobilePosicionChange(this.value)"></select>
+      </div>
+
+      <!-- Categoría -->
       <div class="slicer-group">
         <div class="slicer-title">
           <span>Categoría</span>
@@ -413,10 +451,11 @@
             <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearSlicer('Categoría')">🚫</button>
           </span>
         </div>
-        <div class="slicer-buttons" id="slicer-categoria"></div>
+        <div class="slicer-buttons vertical" id="slicer-categoria"></div>
+        <select class="mobile-slicer-select" id="select-categoria" onchange="handleMobileSelectChange('Categoría', this.value)"></select>
       </div>
 
-      <!-- Segmentador Liga -->
+      <!-- Liga -->
       <div class="slicer-group">
         <div class="slicer-title">
           <span>Liga</span>
@@ -425,11 +464,12 @@
             <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearSlicer('LIGA')">🚫</button>
           </span>
         </div>
-        <div class="slicer-buttons" id="slicer-liga"></div>
+        <div class="slicer-buttons vertical" id="slicer-liga"></div>
+        <select class="mobile-slicer-select" id="select-liga" onchange="handleMobileSelectChange('LIGA', this.value)"></select>
       </div>
 
-      <!-- Segmentador Prueba -->
-      <div class="slicer-group">
+      <!-- Prueba -->
+      <div class="slicer-group wide-slicer">
         <div class="slicer-title">
           <span>Prueba</span>
           <span class="slicer-icons">
@@ -437,7 +477,8 @@
             <button type="button" class="icon-btn" title="Quitar filtro" onclick="clearSlicer('PRUEBA')">🚫</button>
           </span>
         </div>
-        <div class="slicer-buttons" id="slicer-prueba"></div>
+        <div class="slicer-buttons grid-buttons" id="slicer-prueba"></div>
+        <select class="mobile-slicer-select" id="select-prueba" onchange="handleMobileSelectChange('PRUEBA', this.value)"></select>
       </div>
 
     </div>
@@ -450,7 +491,7 @@
       <div class="toolbar-right">
         <span id="sort-indicator"></span>
         <button class="btn-export-excel" id="btn-export" onclick="exportToExcel()">⬇ Descargar Excel</button>
-        <button class="btn-copy-clipboard" id="btn-copy" onclick="copyTableToClipboard()">📋 Copiar </button>
+        <button class="btn-copy-clipboard" id="btn-copy" onclick="copyTableToClipboard()">📋 Copiar Datos</button>
         <button class="btn-clear-filters" onclick="clearAll()">Limpiar filtros de columna</button>
       </div>
     </div>
@@ -504,6 +545,13 @@
       'Categoría': 'slicer-categoria',
       LIGA: 'slicer-liga',
       PRUEBA: 'slicer-prueba'
+    };
+
+    const SLICER_MOBILE_SELECT_MAP = {
+      Genero: 'select-genero',
+      'Categoría': 'select-categoria',
+      LIGA: 'select-liga',
+      PRUEBA: 'select-prueba'
     };
 
     let columnFilters = {};
@@ -631,6 +679,17 @@
 
       container.innerHTML = '';
       container.appendChild(frag);
+
+      // Sincronizar select desplegable para móvil
+      const selectEl = document.getElementById(SLICER_MOBILE_SELECT_MAP[field]);
+      if (selectEl) {
+        let optionsHtml = '<option value="">Todos</option>';
+        uniqueValues.forEach(val => {
+          const isSelected = current !== null && current.has(val);
+          optionsHtml += `<option value="${escapeHtml(val)}"${isSelected ? ' selected' : ''}>${escapeHtml(val)}</option>`;
+        });
+        selectEl.innerHTML = optionsHtml;
+      }
     }
 
     function buildPosicionSlicer() {
@@ -654,6 +713,33 @@
 
       container.innerHTML = '';
       container.appendChild(frag);
+
+      // Sincronizar select de Posición para móvil
+      const selectEl = document.getElementById('select-posicion');
+      if (selectEl) {
+        let optionsHtml = '';
+        ranges.forEach(range => {
+          const isSelected = selectedPosicion === range;
+          optionsHtml += `<option value="${range}"${isSelected ? ' selected' : ''}>${range}</option>`;
+        });
+        selectEl.innerHTML = optionsHtml;
+      }
+    }
+
+    function handleMobileSelectChange(field, value) {
+      if (!value) {
+        selectedFilters[field] = null;
+      } else {
+        selectedFilters[field] = new Set([value]);
+      }
+      createSlicerButtons(field, SLICER_FIELD_TO_ELEMENT[field]);
+      applyFilters();
+    }
+
+    function handleMobilePosicionChange(value) {
+      selectedPosicion = value;
+      buildPosicionSlicer();
+      applyFilters();
     }
 
     function clearPosicion() {
