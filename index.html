@@ -259,10 +259,6 @@
       z-index: 9;
     }
 
-    .filter-row th.is-open {
-      z-index: 1000 !important;
-    }
-
     .filter-dropdown { position: relative; }
 
     .btn-filter-toggle {
@@ -285,37 +281,65 @@
       color: #1f4e79;
     }
 
+    /* Fondo oscuro y ventana modal de filtro centrada para todos los dispositivos */
+    .filter-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.35);
+      z-index: 9998;
+    }
+
     .filter-panel {
       display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      z-index: 2000;
-      width: 230px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      width: 90%;
+      max-width: 320px;
+      max-height: 85vh;
       background: #fff;
       border: 1px solid var(--excel-border);
-      border-radius: 4px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-      padding: 8px;
+      border-radius: 6px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      padding: 12px;
       text-align: left;
       font-weight: normal;
+    }
+
+    .filter-modal-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #1f4e79;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--excel-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .filter-sort-row { display: flex; gap: 4px; margin-bottom: 6px; }
     .filter-sort-row button {
       flex: 1;
       font-size: 10px;
-      padding: 5px 2px;
+      padding: 6px 2px;
       border: 1px solid var(--excel-border);
       background: #eef1f6;
       border-radius: 2px;
       cursor: pointer;
       color: #1f4e79;
     }
+    .filter-sort-row button:hover { background: #dde6f2; }
 
     .filter-search {
       width: 100%;
-      padding: 5px;
+      padding: 6px;
       font-size: 11px;
       border: 1px solid var(--excel-border);
       border-radius: 2px;
@@ -329,28 +353,34 @@
       margin-bottom: 4px;
     }
 
-    .filter-check-list { max-height: 170px; overflow-y: auto; margin-bottom: 8px; }
+    .filter-check-list {
+      max-height: 45vh;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
 
     .filter-check-item {
       display: block;
       font-size: 11px;
-      padding: 3px 2px;
+      padding: 4px 2px;
       cursor: pointer;
       color: #333;
     }
-    .filter-check-item input { margin-right: 5px; transform: scale(1.0); }
+    .filter-check-item input { margin-right: 6px; transform: scale(1.0); }
 
     .filter-actions { display: flex; gap: 6px; }
     .filter-actions button {
       flex: 1;
-      font-size: 10px;
-      padding: 6px;
+      font-size: 11px;
+      padding: 7px;
       border-radius: 2px;
       cursor: pointer;
       border: 1px solid var(--excel-border);
     }
-    .btn-apply { background: #2f5597; color: #fff; }
+    .btn-apply { background: #2f5597; color: #fff; font-weight: bold; }
+    .btn-apply:hover { background: #1f4e79; }
     .btn-cancel { background: #eee; color: #333; }
+    .btn-cancel:hover { background: #e0e0e0; }
 
     .load-more-container {
       text-align: center;
@@ -395,15 +425,6 @@
 
       .table-toolbar { flex-direction: column; align-items: flex-start; }
       .toolbar-right { width: 100%; justify-content: space-between; }
-      .filter-panel {
-        position: fixed;
-        left: 5%;
-        right: 5%;
-        top: 15%;
-        width: 90%;
-        z-index: 9999;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
-      }
     }
   </style>
 </head>
@@ -512,9 +533,13 @@
     </div>
   </div>
 
+  <!-- Contenedores globales para la ventana modal de filtros (fuera de la tabla) -->
+  <div id="filter-backdrop" class="filter-backdrop" onclick="closeAllPanels()"></div>
+  <div id="filter-modal" class="filter-panel"></div>
+
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzo0LhRkLz2nU3ydkGWEy-I6B0hYOvpVfUivhjqIZVdrQ_XBLA3X4QFC-hMs021fW0/exec";
-    const CACHE_KEY = 'ranking_natacion_cache_v1';
+    const CACHE_KEY = 'ranking_natacion_cache_v2';
     const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
     
     const PAGE_SIZE = 100;
@@ -532,7 +557,9 @@
       { key: 'CLUB',             label: 'CLUB' },
       { key: 'Genero',           label: 'Genero' },
       { key: 'Categoría',        label: 'Categoría' },
-      { key: 'Edad',             label: 'Edad' }
+      { key: 'Edad',             label: 'Edad' },
+      { key: 'MMIC',             label: 'MMIC' },
+      { key: 'Valida',           label: 'Valida' }
     ];
 
     let allData = [];
@@ -558,6 +585,7 @@
     COLUMNS.forEach(c => columnFilters[c.key] = null);
     let sortState = { key: null, direction: null };
     let currentFiltered = [];
+    let currentOpenFilterIdx = null;
 
     function getVal(row, col) { return row[col.key] ?? ''; }
 
@@ -788,41 +816,44 @@
             <button type="button" class="btn-filter-toggle${columnFilters[col.key] ? ' filter-active' : ''}" id="toggle-${idx}" onclick="toggleFilterPanel(${idx})">
               <span>Filtrar</span><span>▾</span>
             </button>
-            <div class="filter-panel" id="panel-${idx}"></div>
           </div>
         </th>
       `).join('');
     }
 
     function closeAllPanels() {
-      document.querySelectorAll('.filter-panel').forEach(p => p.style.display = 'none');
-      document.querySelectorAll('.filter-row th').forEach(th => th.classList.remove('is-open'));
+      const modal = document.getElementById('filter-modal');
+      const backdrop = document.getElementById('filter-backdrop');
+      if (modal) modal.style.display = 'none';
+      if (backdrop) backdrop.style.display = 'none';
+      currentOpenFilterIdx = null;
     }
 
     function toggleFilterPanel(idx) {
-      const panel = document.getElementById('panel-' + idx);
-      const isOpen = panel.style.display === 'block';
-      
-      closeAllPanels();
-      
-      if (isOpen) return;
+      if (currentOpenFilterIdx === idx) {
+        closeAllPanels();
+        return;
+      }
 
       renderFilterPanel(idx);
-      panel.style.display = 'block';
-
-      const parentTh = panel.closest('th');
-      if (parentTh) {
-        parentTh.classList.add('is-open');
-      }
+      const modal = document.getElementById('filter-modal');
+      const backdrop = document.getElementById('filter-backdrop');
+      if (backdrop) backdrop.style.display = 'block';
+      if (modal) modal.style.display = 'block';
+      currentOpenFilterIdx = idx;
     }
 
     function renderFilterPanel(idx) {
       const col = COLUMNS[idx];
-      const panel = document.getElementById('panel-' + idx);
+      const modal = document.getElementById('filter-modal');
       const allValues = ordenarValores(col.key, [...new Set(allData.map(row => String(getVal(row, col))).filter(v => v !== ''))]);
       const current = columnFilters[col.key];
 
-      panel.innerHTML = `
+      modal.innerHTML = `
+        <div class="filter-modal-title">
+          <span>Filtrar: ${escapeHtml(col.label)}</span>
+          <button type="button" class="icon-btn" onclick="closeAllPanels()" title="Cerrar">✕</button>
+        </div>
         <div class="filter-sort-row">
           <button type="button" onclick="sortByColumn(${idx}, 'asc')">▲ A-Z</button>
           <button type="button" onclick="sortByColumn(${idx}, 'desc')">▼ Z-A</button>
@@ -842,7 +873,7 @@
         </div>
         <div class="filter-actions">
           <button type="button" class="btn-apply" onclick="applyColumnFilter(${idx})">Aceptar</button>
-          <button type="button" class="btn-cancel" onclick="closePanel(${idx})">Cancelar</button>
+          <button type="button" class="btn-cancel" onclick="closeAllPanels()">Cancelar</button>
         </div>
       `;
     }
@@ -871,23 +902,19 @@
       }
 
       document.getElementById('toggle-' + idx).classList.toggle('filter-active', columnFilters[col.key] !== null);
-      closePanel(idx);
+      closeAllPanels();
       applyFilters();
     }
 
-    function closePanel(idx) {
-      closeAllPanels();
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.filter-dropdown')) {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
         closeAllPanels();
       }
     });
 
     function sortByColumn(idx, direction) {
       sortState = { key: COLUMNS[idx].key, direction };
-      closePanel(idx);
+      closeAllPanels();
       applyFilters();
     }
 
