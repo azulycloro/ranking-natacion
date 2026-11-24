@@ -595,6 +595,27 @@
         .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
+    // Convierte tiempos de natación (ej. "00:24.50", "01:02.15", "58.90") a segundos numéricos para ordenar con precisión
+    function parseSwimTimeToSeconds(val) {
+      if (val === null || val === undefined) return Infinity;
+      const str = String(val).trim().replace(',', '.');
+      if (!str || !/\d/.test(str) || /[a-zA-Z]/.test(str)) return Infinity;
+
+      const parts = str.split(':');
+      let seconds = 0;
+      for (let i = 0; i < parts.length; i++) {
+        const num = parseFloat(parts[i]);
+        if (isNaN(num)) return Infinity;
+        seconds = seconds * 60 + num;
+      }
+      return seconds;
+    }
+
+    // Activa el ordenamiento automático por la columna Tiempo (menor a mayor)
+    function sortByTiempoAsc() {
+      sortState = { key: 'Tiempo', direction: 'asc' };
+    }
+
     function ordenarValoresPrueba(valores) {
       return valores.slice().sort((a, b) => {
         const da = parseInt((String(a).match(/^\d+/) || ['0'])[0], 10);
@@ -734,6 +755,7 @@
         btn.onclick = () => {
           selectedPosicion = range;
           buildPosicionSlicer();
+          sortByTiempoAsc();
           applyFilters();
         };
         frag.appendChild(btn);
@@ -761,18 +783,21 @@
         selectedFilters[field] = new Set([value]);
       }
       createSlicerButtons(field, SLICER_FIELD_TO_ELEMENT[field]);
+      sortByTiempoAsc();
       applyFilters();
     }
 
     function handleMobilePosicionChange(value) {
       selectedPosicion = value;
       buildPosicionSlicer();
+      sortByTiempoAsc();
       applyFilters();
     }
 
     function clearPosicion() {
       selectedPosicion = 'Todos';
       buildPosicionSlicer();
+      sortByTiempoAsc();
       applyFilters();
     }
 
@@ -794,12 +819,14 @@
       }
 
       createSlicerButtons(field, SLICER_FIELD_TO_ELEMENT[field]);
+      sortByTiempoAsc();
       applyFilters();
     }
 
     function clearSlicer(field) {
       selectedFilters[field] = null;
       createSlicerButtons(field, SLICER_FIELD_TO_ELEMENT[field]);
+      sortByTiempoAsc();
       applyFilters();
     }
 
@@ -973,6 +1000,14 @@
       if (sortState.key) {
         const col = COLUMNS.find(c => c.key === sortState.key);
         filtered.sort((a, b) => {
+          if (sortState.key === 'Tiempo') {
+            const ta = parseSwimTimeToSeconds(getVal(a, col));
+            const tb = parseSwimTimeToSeconds(getVal(b, col));
+            if (ta === Infinity && tb === Infinity) return 0;
+            if (ta === Infinity) return 1;
+            if (tb === Infinity) return -1;
+            return sortState.direction === 'desc' ? tb - ta : ta - tb;
+          }
           const cmp = String(getVal(a, col)).localeCompare(String(getVal(b, col)), 'es', { numeric: true });
           return sortState.direction === 'desc' ? -cmp : cmp;
         });
